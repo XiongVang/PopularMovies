@@ -9,7 +9,7 @@ import com.teamtreehouse.popularmovies.di.RetrofitBuilderModule;
 
 public class PopularMoviesApp extends Application {
 
-    private final String API_KEY = "" // INSERT YOUR MOVIE API KEY HERE;
+    private final String API_KEY = ""; // INSERT YOUR MOVIE API KEY HERE;
 
 
     MovieDbApiComponent mMovieDbApiComponent;
