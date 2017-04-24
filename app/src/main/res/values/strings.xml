@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+    <string name="error_text_placeholder">Error text placeholder</string>
+    <string name="network_error">Unable to connect to network</string>
+    <string name="retry">Retry</string>
+    <string name="sort_by_most_popular">Sort by most popular</string>
+    <string name="sort_by_highest_rated">Sort by highest rated</string>
+
+</resources>
