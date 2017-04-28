@@ -42,8 +42,8 @@ public class RetrofitBuilderModule {
         return new Retrofit.Builder()
                 .client(okHttpClient)
                 .addCallAdapterFactory(rxJava2CallAdapterFactory)
-                .addConverterFactory(gsonConverterFactory)
-                .addConverterFactory(scalarConverterFactory);
+                .addConverterFactory(gsonConverterFactory);
+                //.addConverterFactory(scalarConverterFactory);
 
     }
 }

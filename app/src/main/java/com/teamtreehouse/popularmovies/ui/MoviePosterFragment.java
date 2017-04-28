@@ -7,8 +7,10 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,12 +22,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.jakewharton.rxrelay2.PublishRelay;
 import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
-import com.teamtreehouse.popularmovies.api.MovieDbApiService;
 import com.teamtreehouse.popularmovies.model.Movie;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -35,10 +36,10 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.Observer;
 import io.reactivex.Single;
-import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class MoviePosterFragment extends Fragment {
@@ -48,6 +49,11 @@ public class MoviePosterFragment extends Fragment {
     private static final int SORT_BY_MOST_POPULAR = 1;
     private static final int SORT_BY_HIGHEST_RATED = 2;
 
+    @Inject
+    MoviePosterViewModel mMoviePosterViewModel;
+
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
     @BindView(R.id.error_message)
     LinearLayout mNetworkError;
     @BindView(R.id.retry_button)
@@ -59,22 +65,20 @@ public class MoviePosterFragment extends Fragment {
     private Unbinder mUnbinder;
 
     private CompositeDisposable mCompositeDisposable;
-    private Disposable mMovieApiSubcription;
 
 
     private Context mContext;
+    private PublishRelay<List<Movie>> mMovieListChangeNotifier;
     MoviePosterAdapter mMoviePosterAdapter;
-
-    @Inject
-    MovieDbApiService mMovieDbApiService;
 
     private int mSortPref;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        mMovieListChangeNotifier = PublishRelay.create();
         mSortPref = SORT_BY_MOST_POPULAR;
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -90,12 +94,11 @@ public class MoviePosterFragment extends Fragment {
         mUnbinder = ButterKnife.bind(this, view);
         mCompositeDisposable = new CompositeDisposable();
 
+        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
-        mMoviePosterAdapter = new MoviePosterAdapter(new ArrayList<>());
+        mMoviePosterAdapter = new MoviePosterAdapter(mMovieListChangeNotifier);
         mMoviePosterGrid.setLayoutManager(new GridLayoutManager(mContext, 2));
         mMoviePosterGrid.setAdapter(mMoviePosterAdapter);
-
-        mRetryButton.setOnClickListener(v -> onResume());
 
         return view;
     }
@@ -129,7 +132,7 @@ public class MoviePosterFragment extends Fragment {
 
     private void subscribeToListItemClickListener() {
 
-        mMoviePosterAdapter.getListItemClickObservable()
+        mMoviePosterAdapter.getListItemClickNotifier()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Movie>() {
@@ -162,26 +165,19 @@ public class MoviePosterFragment extends Fragment {
         Single<List<Movie>> apiService;
 
         if (mSortPref == SORT_BY_HIGHEST_RATED) {
-            apiService = mMovieDbApiService.getTopRatedMovies();
+            apiService = mMoviePosterViewModel.getHighestRateMovies();
         } else {
-            apiService = mMovieDbApiService.getMostPopularMovies();
+            apiService = mMoviePosterViewModel.getMostPopularMovies();
         }
 
         apiService
                 .subscribeOn(Schedulers.single())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<Movie>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        mMovieApiSubcription = d;
-                    }
-
+                .subscribe(new DisposableSingleObserver<List<Movie>>() {
                     @Override
                     public void onSuccess(List<Movie> movies) {
-                        mMoviePosterAdapter.updateMovies(movies);
+                        mMovieListChangeNotifier.accept(movies);
                         showMoviePosterGrid();
-                        mMovieApiSubcription.dispose();
-
                     }
 
                     @Override
@@ -207,6 +203,7 @@ public class MoviePosterFragment extends Fragment {
     }
 
     private void showNetworkError() {
+        mRetryButton.setOnClickListener(v -> onResume());
         mNetworkError.setVisibility(View.VISIBLE);
         mProgressBar.setVisibility(View.GONE);
         mMoviePosterGrid.setVisibility(View.GONE);

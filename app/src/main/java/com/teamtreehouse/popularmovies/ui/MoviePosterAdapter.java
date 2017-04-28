@@ -12,23 +12,41 @@ import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.R;
 import com.teamtreehouse.popularmovies.model.Movie;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.MoviePosterHolder> {
 
     private static final String TAG = "MoviePosterAdapter";
 
+    private final PublishRelay<List<Movie>> mMovieListChangedNotifier;
+
     private Context mContext;
-    private List<Movie> mMovies;
+    private List<Movie> mMovies = new ArrayList<>();
     private PublishRelay<Movie> mListItemClickNotifier;
 
-    public MoviePosterAdapter(List<Movie> movies){
-        mMovies = movies;
+    public MoviePosterAdapter(PublishRelay<List<Movie>> movieListNotifier){
+
+        mMovieListChangedNotifier = movieListNotifier;
+        bind();
+
         mListItemClickNotifier = PublishRelay.create();
+    }
+
+    private void bind(){
+        mMovieListChangedNotifier
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(movies -> {
+                    mMovies = movies;
+                    notifyDataSetChanged();
+                });
     }
 
 
@@ -66,17 +84,11 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
             mMoviePoster.setOnClickListener(v -> mListItemClickNotifier
                     .accept(mMovies.get(getAdapterPosition())));
         }
-
     }
 
-    // -- client methods --
-
-    public void updateMovies(List<Movie> movies){
-        mMovies = movies;
-        notifyDataSetChanged();
-    }
-
-    PublishRelay<Movie> getListItemClickObservable() {
+    // Client Methods
+    public PublishRelay<Movie> getListItemClickNotifier(){
         return mListItemClickNotifier;
     }
+
 }

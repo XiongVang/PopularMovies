@@ -74,6 +74,33 @@ public class MovieDbApiService {
         return movies;
     }
 
+    public Single<List<String>> getVideos(String movieId) {
+        return mMovieDbApi
+                .getVideos(movieId, API_KEY)
+                .map(this::parseJsonStringToVideoUrls);
+    }
+
+    private List<String> parseJsonStringToVideoUrls(MovieVideosResponse response) {
+        List<Video> results = response.getVideos();
+
+        List<String> videos = new ArrayList<>();
+        for(Video result: results){
+            if(result.getType().equalsIgnoreCase("trailer"))
+                videos.add(result.getKey());
+        }
+
+        return videos;
+    }
+
+    public Single<List<Review>> getReviews(String movieId) {
+        return mMovieDbApi
+                .getReviews(movieId, API_KEY)
+                .map(this::parseResponseToReviews);
+    }
+
+    private List<Review> parseResponseToReviews(MovieReviewsResponse response) {
+        return response.getReviews();
+    }
 
 }
 

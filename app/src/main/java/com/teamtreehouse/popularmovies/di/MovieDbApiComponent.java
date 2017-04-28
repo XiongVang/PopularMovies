@@ -1,5 +1,6 @@
 package com.teamtreehouse.popularmovies.di;
 
+import com.teamtreehouse.popularmovies.ui.MovieDetailFragment;
 import com.teamtreehouse.popularmovies.ui.MoviePosterFragment;
 
 import javax.inject.Singleton;
@@ -10,4 +11,5 @@ import dagger.Component;
 @Component(modules = {MovieDbApiModule.class,RetrofitBuilderModule.class})
 public interface MovieDbApiComponent {
     void inject(MoviePosterFragment fragment);
+    void inject(MovieDetailFragment fragment);
 }

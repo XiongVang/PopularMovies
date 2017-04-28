@@ -16,26 +16,38 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
+import com.teamtreehouse.popularmovies.api.Review;
 import com.teamtreehouse.popularmovies.model.Movie;
+
+import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
 
 public class MovieDetailFragment extends Fragment {
     private static final String TAG = "MovieDetailFragment";
 
     private static final String ARG_MOVIE = "com.teamtreehouse.popularmovies.ui.MovieDetialFragment.ARG_MOVIE";
 
-    public static Fragment newInstance(Movie movie){
+    public static Fragment newInstance(Movie movie) {
         Bundle bundle = new Bundle();
-        bundle.putParcelable(ARG_MOVIE,movie);
+        bundle.putParcelable(ARG_MOVIE, movie);
         Fragment fragment = new MovieDetailFragment();
         fragment.setArguments(bundle);
 
         return fragment;
     }
+
+    @Inject
+    MovieDetailViewModel mMovieDetailViewModel;
 
     @BindView(R.id.error_message)
     LinearLayout mErrorMessage;
@@ -65,9 +77,7 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mMovie = getArguments().getParcelable(ARG_MOVIE);
-
     }
 
     @Nullable
@@ -76,17 +86,49 @@ public class MovieDetailFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_movie_detail,container,false);
+        View view = inflater.inflate(R.layout.fragment_movie_detail, container, false);
         mContext = container.getContext();
-        mUnbinder = ButterKnife.bind(this,view);
+        ((PopularMoviesApp) mContext.getApplicationContext())
+                .getMovieDbApiComponent()
+                .inject(this);
 
-        mRetryButton.setOnClickListener(v -> onResume());
+        mUnbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        mMovieDetailViewModel.getVideos(mMovie.getMovieId())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DisposableSingleObserver<List<String>>() {
+                    @Override
+                    public void onSuccess(List<String> value) {
+                        Log.d(TAG, "onSuccess: getVideos() " + value);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: getVideos() ", e);
+                    }
+                });
+
+        mMovieDetailViewModel.getReviews(mMovie.getMovieId())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DisposableSingleObserver<List<Review>>() {
+                    @Override
+                    public void onSuccess(List<Review> reviews) {
+                        Log.d(TAG, "onSuccess: getReviews() " + reviews.size());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: getReviews()", e);
+                    }
+                });
 
         if (mMovie == null) {
             showErrorMessage();
@@ -109,6 +151,7 @@ public class MovieDetailFragment extends Fragment {
 
 
     private void showErrorMessage() {
+        mRetryButton.setOnClickListener(v -> onResume());
         mErrorMessage.setVisibility(View.VISIBLE);
         mProgressBar.setVisibility(View.GONE);
         mMovieDetails.setVisibility(View.GONE);
