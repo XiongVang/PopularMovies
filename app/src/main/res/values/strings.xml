@@ -5,5 +5,14 @@
     <string name="retry">Retry</string>
     <string name="sort_by_most_popular">Sort by most popular</string>
     <string name="sort_by_highest_rated">Sort by highest rated</string>
-
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="trailers">Trailers:</string>
+    <string name="reviews">Reviews:</string>
+    <string name="placeholder_movie_detail_title">Title</string>
+    <string name="placeholder_movie_detail_release_date">yyyy-mm-dd</string>
+    <string name="placeholder_movie_detail_avg_rating">00.00</string>
+    <string name="no_trailers_found">(No trailers found)</string>
+    <string name="no_reviews_found">(No reviews found)</string>
+    <string name="placeholder_review_author">Author</string>
+    <string name="placeholder_review_content">Content...</string>
 </resources>

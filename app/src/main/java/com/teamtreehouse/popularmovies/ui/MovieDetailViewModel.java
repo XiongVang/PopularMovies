@@ -3,7 +3,7 @@ package com.teamtreehouse.popularmovies.ui;
 import android.util.Log;
 
 import com.teamtreehouse.popularmovies.api.MovieDbApiService;
-import com.teamtreehouse.popularmovies.api.Review;
+import com.teamtreehouse.popularmovies.model.Review;
 
 import java.util.List;
 

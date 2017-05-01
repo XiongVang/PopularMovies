@@ -5,21 +5,23 @@
     android:layout_height="match_parent"
     android:layout_centerInParent="true">
 
-        <include layout="@layout/toolbar"/>
-<FrameLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="?attr/actionBarSize">
+    <include layout="@layout/toolbar"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="?attr/actionBarSize">
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/movie_poster_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
 
-    <include layout="@layout/progressbar"/>
+        <include layout="@layout/progressbar"/>
 
-    <include layout="@layout/error_message"/>
-</FrameLayout>
+        <include layout="@layout/error_message"/>
+    </FrameLayout>
 
 
 </FrameLayout>

@@ -1,4 +1,4 @@
-package com.teamtreehouse.popularmovies.api;
+package com.teamtreehouse.popularmovies.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

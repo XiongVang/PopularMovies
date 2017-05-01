@@ -1,6 +1,8 @@
 package com.teamtreehouse.popularmovies.api;
 
 import com.teamtreehouse.popularmovies.model.Movie;
+import com.teamtreehouse.popularmovies.model.Review;
+import com.teamtreehouse.popularmovies.model.Video;
 
 import java.util.ArrayList;
 import java.util.List;
