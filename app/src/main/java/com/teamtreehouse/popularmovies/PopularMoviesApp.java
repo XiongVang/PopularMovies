@@ -2,32 +2,31 @@ package com.teamtreehouse.popularmovies;
 
 import android.app.Application;
 
-import com.teamtreehouse.popularmovies.di.DaggerMovieDbApiComponent;
-import com.teamtreehouse.popularmovies.di.MovieDbApiComponent;
-import com.teamtreehouse.popularmovies.di.MovieDbApiModule;
-import com.teamtreehouse.popularmovies.di.RetrofitBuilderModule;
+import com.teamtreehouse.popularmovies.di.ApiModule;
+import com.teamtreehouse.popularmovies.di.DaggerDataComponent;
+import com.teamtreehouse.popularmovies.di.DataComponent;
+import com.teamtreehouse.popularmovies.di.DataModelModule;
 
 public class PopularMoviesApp extends Application {
 
-    private final String API_KEY = "63ba90194ff5cc0e2f703ed4f25413f1"; // INSERT YOUR MOVIE API KEY HERE;
+    private final String API_KEY = "63ba90194ff5cc0e2f703ed4f25413f1";
 
-
-    MovieDbApiComponent mMovieDbApiComponent;
+    DataComponent mDataComponent;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        mMovieDbApiComponent = DaggerMovieDbApiComponent.builder()
-                .retrofitBuilderModule(new RetrofitBuilderModule())
-                .movieDbApiModule(new MovieDbApiModule(API_KEY))
+        mDataComponent = DaggerDataComponent.builder()
+                .apiModule(new ApiModule(API_KEY))
+                .dataModelModule(new DataModelModule())
                 .build();
 
     }
 
-    public MovieDbApiComponent getMovieDbApiComponent() {
-        return mMovieDbApiComponent;
+    public DataComponent getDataComponent() {
+        return mDataComponent;
     }
 
 }
