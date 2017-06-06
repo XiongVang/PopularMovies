@@ -1,7 +1,5 @@
 package com.teamtreehouse.popularmovies.datamodel.datasource.local;
 
-import com.teamtreehouse.popularmovies.datamodel.model.Movie;
-
 import java.util.Collections;
 import java.util.List;
 

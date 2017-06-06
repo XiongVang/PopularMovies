@@ -22,7 +22,7 @@ public class MovieDetailsViewModel {
 
     @NonNull
     public Single<MovieDetailsUiModel> getMovieDetails(@NonNull String movieId){
-        return dataModel.getMovieDetails(movieId);
+        return Single.concat(dataModel.getMovieDetails().map())
     }
 
 }

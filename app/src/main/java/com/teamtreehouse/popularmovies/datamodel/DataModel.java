@@ -2,8 +2,8 @@ package com.teamtreehouse.popularmovies.datamodel;
 
 import android.support.annotation.NonNull;
 
-import com.teamtreehouse.popularmovies.viewmodel.MovieDetailsUiModel;
-import com.teamtreehouse.popularmovies.viewmodel.MoviePosterUiModel;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.videos.Video;
 
 import java.util.List;
 
@@ -11,13 +11,13 @@ import io.reactivex.Single;
 
 public interface DataModel {
 
-    Single<List<MoviePosterUiModel>> getMostPopularMovies();
+    Single<List<Movie>> getMostPopularMovies();
 
-    Single<List<MoviePosterUiModel>> getTopRatedMovies();
+    Single<List<Movie>> getTopRatedMovies();
 
-    Single<List<MoviePosterUiModel>> getFavoriteMovies();
+    Single<Movie> getMovieDetails(@NonNull String movieId);
 
-    Single<MovieDetailsUiModel> getMovieDetails(@NonNull String movieId);
+    Single<List<Review>> getMovieReviews(@NonNull String movieId);
 
-
+    Single<List<Video>> getMovieVideos(@NonNull String movieId);
 }

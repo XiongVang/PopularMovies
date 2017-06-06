@@ -1,6 +1,6 @@
 package com.teamtreehouse.popularmovies.datamodel.datasource.local;
 
-import com.teamtreehouse.popularmovies.datamodel.model.Movie;
+import android.graphics.Movie;
 
 import java.util.List;
 

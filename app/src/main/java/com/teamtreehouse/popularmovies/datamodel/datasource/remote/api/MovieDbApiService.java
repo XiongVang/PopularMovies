@@ -1,5 +1,10 @@
 package com.teamtreehouse.popularmovies.datamodel.datasource.remote.api;
 
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.discovery.MovieApiResponse;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.details.MovieDetails;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.MovieReviewsResponse;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.videos.MovieVideosResponse;
+
 import io.reactivex.Single;
 import retrofit2.Retrofit;
 
@@ -51,7 +56,7 @@ public class MovieDbApiService {
                 .getReviews(movieId, API_KEY);
     }
 
-    public Single<MovieDetailsResponse> getMovieDetails(String movieId){
+    public Single<MovieDetails> getMovieDetails(String movieId){
         return mMovieDbApi.getMovieDetails(movieId,API_KEY);
     }
 

@@ -1,5 +1,10 @@
 package com.teamtreehouse.popularmovies.datamodel.datasource.remote.api;
 
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.discovery.MovieApiResponse;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.details.MovieDetails;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.MovieReviewsResponse;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.videos.MovieVideosResponse;
+
 import io.reactivex.Single;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -15,14 +20,14 @@ public interface MovieDbApi {
     Single<MovieApiResponse> getTopRated(@Query("api_key") String apiKey);
 
     @GET("movie/{id}")
-    Single<MovieDetailsResponse> getMovieDetails(@Path("id") String movieId,
-                                          @Query("api_key") String apiKey);
+    Single<MovieDetails> getMovieDetails(@Path("id") String movieId,
+                                         @Query("api_key") String apiKey);
 
     @GET("movie/{id}/videos")
     Single<MovieVideosResponse> getVideos(@Path("id") String movieId,
-                             @Query("api_key") String apiKey);
+                                          @Query("api_key") String apiKey);
 
     @GET("movie/{id}/reviews")
     Single<MovieReviewsResponse> getReviews(@Path("id") String movieId,
-                              @Query("api_key") String apiKey);
+                                            @Query("api_key") String apiKey);
 }

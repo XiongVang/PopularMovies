@@ -1,7 +1,7 @@
 package com.teamtreehouse.popularmovies.di;
 
-import com.teamtreehouse.popularmovies.ui.moviedetail.MovieDetailFragment;
-import com.teamtreehouse.popularmovies.ui.movieposter.MoviePosterFragment;
+import com.teamtreehouse.popularmovies.view.moviedetail.MovieDetailFragment;
+import com.teamtreehouse.popularmovies.view.movieposter.MoviePosterFragment;
 
 import javax.inject.Singleton;
 
