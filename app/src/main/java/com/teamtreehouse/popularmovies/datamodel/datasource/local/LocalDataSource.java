@@ -1,6 +1,6 @@
 package com.teamtreehouse.popularmovies.datamodel.datasource.local;
 
-import android.graphics.Movie;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.discovery.MovieResult;
 
 import java.util.List;
 
@@ -9,6 +9,6 @@ import io.reactivex.Single;
 
 public interface LocalDataSource {
 
-    Single<List<Movie>> getFavoriteMovies();
+    Single<List<MovieResult>> getFavoriteMovies();
 
 }

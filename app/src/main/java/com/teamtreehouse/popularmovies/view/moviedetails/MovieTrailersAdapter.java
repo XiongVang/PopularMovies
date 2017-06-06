@@ -1,4 +1,4 @@
-package com.teamtreehouse.popularmovies.view.moviedetail;
+package com.teamtreehouse.popularmovies.view.moviedetails;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -22,9 +22,6 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Created by vang4999 on 5/1/17.
- */
 
 public class MovieTrailersAdapter extends RecyclerView.Adapter<MovieTrailersAdapter.ThumbnailViewHolder> {
 

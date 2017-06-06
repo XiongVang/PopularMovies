@@ -1,4 +1,4 @@
-package com.teamtreehouse.popularmovies.viewmodel;
+package com.teamtreehouse.popularmovies.viewmodel.uimodels;
 
 public class MoviePosterUiModel {
 

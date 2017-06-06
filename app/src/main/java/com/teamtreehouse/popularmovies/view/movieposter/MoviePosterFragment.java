@@ -20,13 +20,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
-import com.teamtreehouse.popularmovies.viewmodel.MoviePosterUiModel;
+import com.teamtreehouse.popularmovies.view.moviedetails.MovieDetailsActivity;
+import com.teamtreehouse.popularmovies.viewmodel.MovieDetailsViewModel;
 import com.teamtreehouse.popularmovies.viewmodel.MoviePosterViewModel;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.MoviePosterUiModel;
 
 import java.util.List;
 
@@ -53,6 +54,8 @@ public class MoviePosterFragment extends Fragment {
 
     @Inject
     MoviePosterViewModel mMoviePosterViewModel;
+    @Inject
+    MovieDetailsViewModel mMovieDetailsViewModel;
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -144,8 +147,8 @@ public class MoviePosterFragment extends Fragment {
                     }
 
                     @Override
-                    public void onNext(String value) {
-                        Toast.makeText(mContext,value,Toast.LENGTH_SHORT).show();
+                    public void onNext(String movieId) {
+                        startActivity(MovieDetailsActivity.newIntent(mContext,movieId));
                     }
 
                     @Override

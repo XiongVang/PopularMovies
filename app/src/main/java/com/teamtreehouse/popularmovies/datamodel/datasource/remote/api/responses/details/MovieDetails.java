@@ -3,6 +3,7 @@ package com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.response
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.MovieDbApiService;
 
 import java.util.List;
 
@@ -133,7 +134,7 @@ public class MovieDetails {
     }
 
     public String getPosterPath() {
-        return posterPath;
+        return MovieDbApiService.POSTER_BASE_URL + posterPath;
     }
 
     public List<ProductionCompany> getProductionCompanies() {

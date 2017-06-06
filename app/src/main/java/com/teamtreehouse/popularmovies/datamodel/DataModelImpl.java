@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 
 import com.teamtreehouse.popularmovies.datamodel.datasource.local.LocalDataSource;
 import com.teamtreehouse.popularmovies.datamodel.datasource.remote.RemoteDataSource;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.details.MovieDetails;
+import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.discovery.MovieResult;
 import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
 import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.videos.Video;
 
@@ -25,27 +27,27 @@ public class DataModelImpl implements DataModel {
 
 
     @Override
-    public Single<List<Movie>> getMostPopularMovies() {
+    public Single<List<MovieResult>> getMostPopularMovies() {
         return remoteDataSource.getMostPopularMovies();
     }
 
     @Override
-    public Single<List<Movie>> getTopRatedMovies() {
+    public Single<List<MovieResult>> getTopRatedMovies() {
         return remoteDataSource.getTopRatedMovies();
     }
 
     @Override
-    public Single<Movie> getMovieDetails(@NonNull String movieId) {
-        return null;
+    public Single<MovieDetails> getMovieDetails(@NonNull String movieId) {
+        return remoteDataSource.getMovieDetails(movieId);
     }
 
     @Override
     public Single<List<Review>> getMovieReviews(@NonNull String movieId) {
-        return null;
+        return remoteDataSource.getMovieReviews(movieId);
     }
 
     @Override
     public Single<List<Video>> getMovieVideos(@NonNull String movieId) {
-        return null;
+        return remoteDataSource.getMovieTrailers(movieId);
     }
 }

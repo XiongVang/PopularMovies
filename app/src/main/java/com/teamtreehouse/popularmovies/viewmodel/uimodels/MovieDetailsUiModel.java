@@ -1,4 +1,4 @@
-package com.teamtreehouse.popularmovies.viewmodel;
+package com.teamtreehouse.popularmovies.viewmodel.uimodels;
 
 import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
 

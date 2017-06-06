@@ -14,6 +14,8 @@ public class MovieDbApiService {
 
     private static final String BASE_URL = "https://api.themoviedb.org/3/";
 
+    public static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w185/";
+
 
 
     private final String API_KEY;

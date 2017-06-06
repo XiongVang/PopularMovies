@@ -1,4 +1,4 @@
-package com.teamtreehouse.popularmovies.view.moviedetail;
+package com.teamtreehouse.popularmovies.view.moviedetails;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -22,8 +22,8 @@ import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
 import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
-import com.teamtreehouse.popularmovies.viewmodel.MovieDetailsUiModel;
 import com.teamtreehouse.popularmovies.viewmodel.MovieDetailsViewModel;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.MovieDetailsUiModel;
 
 import java.util.List;
 
@@ -36,15 +36,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
-public class MovieDetailFragment extends Fragment {
-    private static final String TAG = "MovieDetailFragment";
+public class MovieDetailsFragment extends Fragment {
+    private static final String TAG = "MovieDetailsFragment";
 
     private static final String ARG_MOVIE_ID = "com.teamtreehouse.popularmovies.ui.MovieDetialFragment.ARG_MOVIE_ID";
 
     public static Fragment newInstance(String movieId) {
         Bundle bundle = new Bundle();
         bundle.putString(ARG_MOVIE_ID, movieId);
-        Fragment fragment = new MovieDetailFragment();
+        Fragment fragment = new MovieDetailsFragment();
         fragment.setArguments(bundle);
 
         return fragment;
@@ -113,6 +113,10 @@ public class MovieDetailFragment extends Fragment {
 
         mUnbinder = ButterKnife.bind(this, view);
 
+        mFavoritesButton.setOnClickListener(v -> {
+            // TODO: lookup favorites button
+        });
+
         showNoTrailersFound();
         setupTrailersRecyclerView();
 
@@ -151,26 +155,27 @@ public class MovieDetailFragment extends Fragment {
         } else {
             showProgressBar();
             bind();
-            populateDetails();
-            showMovieDetails();
         }
     }
 
     private void bind() {
-        mMovieDetailsViewModel
-                .getMovieDetails(mMovieId)
+
+        mMovieDetailsViewModel.getMovieDetails(mMovieId)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisposableSingleObserver<MovieDetailsUiModel>() {
                     @Override
-                    public void onSuccess(MovieDetailsUiModel value) {
-                        mMovieDetailsUiModel = value;
+                    public void onSuccess(MovieDetailsUiModel uiModel) {
+                        mMovieDetailsUiModel = uiModel;
+                        populateDetails();
+                        loadTrailers(uiModel.getTrailerIds());
+                        loadReviews(uiModel.getReviews());
+                        showMovieDetails();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(TAG, "onError: ", e);
-                        showErrorMessage();
+                        Log.e(TAG, "getMovieDetails() - onError: ", e);
                     }
                 });
     }
@@ -221,15 +226,15 @@ public class MovieDetailFragment extends Fragment {
 
 
     private void populateDetails() {
-        mTitle.setText(mMovie.getTitle());
+        mTitle.setText(mMovieDetailsUiModel.getOriginalTitle());
         Picasso.with(mContext)
-                .load(mMovie.getImageThumbnailUrl())
+                .load(mMovieDetailsUiModel.getImageThumbnailUrl())
                 .error(R.drawable.movie_poster_error)
                 .placeholder(R.drawable.movie_poster_placeholder)
                 .into(mPosterThumbnail);
-        mReleaseDate.setText(mMovie.getReleaseDate());
-        mAvgRating.setText(String.valueOf(mMovie.getUserRating()));
-        mPlotSynopsis.setText(mMovie.getPlotSynopsis());
+        mReleaseDate.setText(mMovieDetailsUiModel.getReleaseDate());
+        mAvgRating.setText(String.valueOf(mMovieDetailsUiModel.getUserRating()));
+        mPlotSynopsis.setText(mMovieDetailsUiModel.getPlotSynopsis());
     }
 
 

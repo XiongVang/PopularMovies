@@ -1,4 +1,4 @@
-package com.teamtreehouse.popularmovies.view.moviedetail;
+package com.teamtreehouse.popularmovies.view.moviedetails;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -20,15 +20,10 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Created by vang4999 on 5/1/17.
- */
 
 public class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapter.ReviewHolder>{
 
     private static final String TAG = "MovieReviewsAdapter";
-
-    private static final String YOUTUBE_THUMBNAIL_URL = "http://img.youtube.com/vi/VIDEO_ID/default.jpg";
 
     private Context mContext;
 

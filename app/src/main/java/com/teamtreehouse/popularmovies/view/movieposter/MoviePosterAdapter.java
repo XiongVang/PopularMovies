@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.R;
-import com.teamtreehouse.popularmovies.viewmodel.MoviePosterUiModel;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.MoviePosterUiModel;
 
 import java.util.ArrayList;
 import java.util.List;
