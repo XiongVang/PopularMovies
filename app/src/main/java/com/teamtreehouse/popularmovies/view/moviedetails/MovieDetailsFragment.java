@@ -1,6 +1,7 @@
 package com.teamtreehouse.popularmovies.view.moviedetails;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,14 +17,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
 import com.teamtreehouse.popularmovies.viewmodel.MovieDetailsViewModel;
 import com.teamtreehouse.popularmovies.viewmodel.uimodels.MovieDetailsUiModel;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.ReviewUiModel;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.TrailerUiModel;
 
 import java.util.List;
 
@@ -33,6 +36,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableCompletableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
@@ -86,9 +90,9 @@ public class MovieDetailsFragment extends Fragment {
 
     private String mMovieId;
     private MovieDetailsUiModel mMovieDetailsUiModel;
-    private PublishRelay<List<String>> mTrailersUpdatedNotifier;
+    private PublishRelay<List<TrailerUiModel>> mTrailersUpdatedNotifier;
     private MovieTrailersAdapter mTrailersAdapter;
-    private PublishRelay<List<Review>> mReviewsUpdatedNotifier;
+    private PublishRelay<List<ReviewUiModel>> mReviewsUpdatedNotifier;
     private MovieReviewsAdapter mReviewsAdapter;
 
     private Context mContext;
@@ -114,7 +118,24 @@ public class MovieDetailsFragment extends Fragment {
         mUnbinder = ButterKnife.bind(this, view);
 
         mFavoritesButton.setOnClickListener(v -> {
-            // TODO: lookup favorites button
+
+            mMovieDetailsViewModel.addToFavorites()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new DisposableCompletableObserver() {
+                        @Override
+                        public void onComplete() {
+                            v.setBackgroundColor(Color.RED);
+                            v.setEnabled(false);
+                            Toast.makeText(mContext, "Movie has been added to favorites",Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: addToFavorites()", e);
+                            Toast.makeText(mContext, "ERROR: Not able to save to favorites",Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
 
         showNoTrailersFound();
@@ -168,7 +189,7 @@ public class MovieDetailsFragment extends Fragment {
                     public void onSuccess(MovieDetailsUiModel uiModel) {
                         mMovieDetailsUiModel = uiModel;
                         populateDetails();
-                        loadTrailers(uiModel.getTrailerIds());
+                        loadTrailers(uiModel.getTrailers());
                         loadReviews(uiModel.getReviews());
                         showMovieDetails();
                     }
@@ -180,13 +201,13 @@ public class MovieDetailsFragment extends Fragment {
                 });
     }
 
-    private void loadTrailers(List<String> trailerIds) {
-        if (trailerIds.size() == 0) {
+    private void loadTrailers(List<TrailerUiModel> trailers) {
+        if (trailers.size() == 0) {
             showNoTrailersFound();
             return;
         }
 
-        mTrailersUpdatedNotifier.accept(trailerIds);
+        mTrailersUpdatedNotifier.accept(trailers);
         showTrailers();
 
 
@@ -202,7 +223,7 @@ public class MovieDetailsFragment extends Fragment {
         mTrailersView.setVisibility(View.VISIBLE);
     }
 
-    private void loadReviews(List<Review> reviews) {
+    private void loadReviews(List<ReviewUiModel> reviews) {
         if (reviews.size() == 0) {
             showNoReviewsFound();
             return;

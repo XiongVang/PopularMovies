@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.teamtreehouse.popularmovies.R;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.ReviewUiModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +27,9 @@ public class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapte
 
     private Context mContext;
 
-    List<Review> mReviews;
+    List<ReviewUiModel> mReviews;
 
-    public MovieReviewsAdapter(PublishRelay<List<Review>> onReviewsUpdatedNotifier) {
+    public MovieReviewsAdapter(PublishRelay<List<ReviewUiModel>> onReviewsUpdatedNotifier) {
         mReviews = new ArrayList<>();
 
         onReviewsUpdatedNotifier
@@ -39,7 +39,7 @@ public class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapte
 
     }
 
-    private void updateUI(List<Review> reviews) {
+    private void updateUI(List<ReviewUiModel> reviews) {
         mReviews = reviews;
         Log.d(TAG, "updateUI: " + reviews.size());
         notifyDataSetChanged();
@@ -56,7 +56,7 @@ public class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapte
 
     @Override
     public void onBindViewHolder(ReviewHolder holder, int position) {
-        Review review = mReviews.get(position);
+        ReviewUiModel review = mReviews.get(position);
 
         holder.mAuthor.setText(review.getAuthor().trim());
         holder.mContent.setText(review.getContent().trim());

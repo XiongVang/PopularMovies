@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.R;
+import com.teamtreehouse.popularmovies.viewmodel.uimodels.TrailerUiModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,20 +30,20 @@ public class MovieTrailersAdapter extends RecyclerView.Adapter<MovieTrailersAdap
 
     private Context mContext;
 
-    List<String> mTrailerIds;
+    List<TrailerUiModel> mTrailers;
 
-    public MovieTrailersAdapter(PublishRelay<List<String>> onTrailersUpdatedNotifier){
-        mTrailerIds = new ArrayList<>();
+    public MovieTrailersAdapter(PublishRelay<List<TrailerUiModel>> onTrailersUpdatedNotifier){
+        mTrailers = new ArrayList<>();
 
         onTrailersUpdatedNotifier
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((trailerIds) -> updateUI(trailerIds));
+                .subscribe((trailers) -> updateUI(trailers));
 
     }
 
-    private void updateUI(List<String> trailerIds){
-        mTrailerIds = trailerIds;
+    private void updateUI(List<TrailerUiModel> trailers){
+        mTrailers = trailers;
         notifyDataSetChanged();
     }
 
@@ -59,13 +60,13 @@ public class MovieTrailersAdapter extends RecyclerView.Adapter<MovieTrailersAdap
     public void onBindViewHolder(ThumbnailViewHolder holder, int position) {
 
         Picasso.with(mContext)
-                .load(YOUTUBE_THUMBNAIL_URL.replace("VIDEO_ID",mTrailerIds.get(position)))
+                .load(YOUTUBE_THUMBNAIL_URL.replace("VIDEO_ID",mTrailers.get(position).getTrailerId()))
                 .error(R.drawable.movie_poster_error)
                 .placeholder(R.drawable.movie_poster_placeholder)
                 .into(holder.mTrailerThumbnail);
 
         holder.mTrailerThumbnail
-                .setOnClickListener(v -> watchYoutubeVideo(mTrailerIds.get(position)));
+                .setOnClickListener(v -> watchYoutubeVideo(mTrailers.get(position).getTrailerId()));
 
     }
 
@@ -83,7 +84,7 @@ public class MovieTrailersAdapter extends RecyclerView.Adapter<MovieTrailersAdap
 
     @Override
     public int getItemCount() {
-        return mTrailerIds.size();
+        return mTrailers.size();
     }
 
     public class ThumbnailViewHolder  extends RecyclerView.ViewHolder{

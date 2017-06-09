@@ -16,4 +16,5 @@
     <string name="no_reviews_found">(No reviews found)</string>
     <string name="placeholder_review_author">Author</string>
     <string name="placeholder_review_content">Content...</string>
+    <string name="favorite_movies">Favorite Movies</string>
 </resources>

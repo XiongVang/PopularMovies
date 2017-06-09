@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".view.moviedetails.MovieDetailsActivity"/>
+        <provider
+            android:name="com.teamtreehouse.popularmovies.datamodel.datasources.local.contentprovider.MovieContentProvider"
+            android:authorities="com.teamtreehouse.popularmovies"
+            android:exported="false"/>
+
     </application>
 
 </manifest>

@@ -2,15 +2,20 @@ package com.teamtreehouse.popularmovies.datamodel;
 
 import android.support.annotation.NonNull;
 
-import com.teamtreehouse.popularmovies.datamodel.datasource.local.LocalDataSource;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.RemoteDataSource;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.details.MovieDetails;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.discovery.MovieResult;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.videos.Video;
+import com.teamtreehouse.popularmovies.datamodel.datasources.local.LocalDataSource;
+import com.teamtreehouse.popularmovies.datamodel.datasources.remote.RemoteDataSource;
+import com.teamtreehouse.popularmovies.datamodel.datasources.remote.api.responses.details.MovieDetails;
+import com.teamtreehouse.popularmovies.datamodel.datasources.remote.api.responses.discovery.MovieResult;
+import com.teamtreehouse.popularmovies.datamodel.datasources.remote.api.responses.reviews.Review;
+import com.teamtreehouse.popularmovies.datamodel.datasources.remote.api.responses.videos.Video;
+import com.teamtreehouse.popularmovies.datamodel.models.MovieModel;
+import com.teamtreehouse.popularmovies.datamodel.models.ReviewModel;
+import com.teamtreehouse.popularmovies.datamodel.models.TrailerModel;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public class DataModelImpl implements DataModel {
@@ -27,27 +32,84 @@ public class DataModelImpl implements DataModel {
 
 
     @Override
-    public Single<List<MovieResult>> getMostPopularMovies() {
-        return remoteDataSource.getMostPopularMovies();
+    public Single<List<MovieModel>> getMostPopularMovies() {
+        return remoteDataSource.getMostPopularMovies()
+                .map(this::mapMovieResultToMovieModels);
     }
 
     @Override
-    public Single<List<MovieResult>> getTopRatedMovies() {
-        return remoteDataSource.getTopRatedMovies();
+    public Single<List<MovieModel>> getTopRatedMovies() {
+        return remoteDataSource.getTopRatedMovies()
+                .map(this::mapMovieResultToMovieModels);
     }
 
     @Override
-    public Single<MovieDetails> getMovieDetails(@NonNull String movieId) {
-        return remoteDataSource.getMovieDetails(movieId);
+    public Single<List<MovieModel>> getFavoriteMovies() {
+        return localDataSource.getFavoriteMovies();
+    }
+
+    private List<MovieModel> mapMovieResultToMovieModels(List<MovieResult> movieResults){
+
+        return movieResults.stream().map(movieResult -> new MovieModel(
+                    movieResult.getId(),
+                    movieResult.getOriginalTitle(),
+                    movieResult.getPosterPath(),
+                    movieResult.getReleaseDate(),
+                    movieResult.getVoteAverage().toString(),
+                    movieResult.getOverview()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Single<List<Review>> getMovieReviews(@NonNull String movieId) {
-        return remoteDataSource.getMovieReviews(movieId);
+    public Single<MovieModel> getMovieDetails(@NonNull String movieId) {
+        return remoteDataSource.getMovieDetails(movieId)
+                .map(this::mapMovieDetailsToMovieModel);
+    }
+
+    private MovieModel mapMovieDetailsToMovieModel(MovieDetails movieDetails){
+        return new MovieModel(
+                    movieDetails.getId(),
+                    movieDetails.getOriginalTitle(),
+                    movieDetails.getPosterPath(),
+                    movieDetails.getReleaseDate(),
+                    movieDetails.getVoteAverage().toString(),
+                    movieDetails.getOverview());
     }
 
     @Override
-    public Single<List<Video>> getMovieVideos(@NonNull String movieId) {
-        return remoteDataSource.getMovieTrailers(movieId);
+    public Single<List<ReviewModel>> getMovieReviews(@NonNull String movieId) {
+        return remoteDataSource.getMovieReviews(movieId)
+                .map(this::mapReviewsToReviewModels);
     }
+
+    private List<ReviewModel> mapReviewsToReviewModels(List<Review> reviews){
+        return reviews.stream()
+                .map(review -> new ReviewModel(
+                        review.getId(),
+                        review.getAuthor(),
+                        review.getContent()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Single<List<TrailerModel>> getMovieTrailers(@NonNull String movieId) {
+        return remoteDataSource.getMovieTrailers(movieId)
+                .map(this::mapVideosToTrailerModels);
+    }
+
+    private List<TrailerModel> mapVideosToTrailerModels(List<Video> videos) {
+        return videos.stream()
+                .filter(video -> video.getType().equals("Trailer"))
+                .map(video -> new TrailerModel(video.getId(),video.getKey()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Completable addToFavorites(MovieModel movie,
+                                      List<ReviewModel> reviews,
+                                      List<TrailerModel> trailers) {
+        return localDataSource.addToFavorites(movie,reviews,trailers);
+    }
+
+
 }

@@ -172,6 +172,9 @@ public class MoviePosterFragment extends Fragment {
             case SORT_BY_HIGHEST_RATED:
                 moviesData = mMoviePosterViewModel.getHighestRateMovies();
                 break;
+            case FAVORITE_MOVIES:
+                moviesData = mMoviePosterViewModel.getFavoriteMovies();
+                break;
             default:
                 moviesData = mMoviePosterViewModel.getMostPopularMovies();
         }
@@ -241,9 +244,15 @@ public class MoviePosterFragment extends Fragment {
         if(mSortPref == SORT_BY_HIGHEST_RATED){
             menu.findItem(R.id.sort_by_highest_rated).setEnabled(false);
             menu.findItem(R.id.sort_by_most_popular).setEnabled(true);
-        } else {
+            menu.findItem(R.id.favorite_movies).setEnabled(true);
+        } else if (mSortPref == FAVORITE_MOVIES){
+            menu.findItem(R.id.sort_by_highest_rated).setEnabled(true);
+            menu.findItem(R.id.sort_by_most_popular).setEnabled(true);
+            menu.findItem(R.id.favorite_movies).setEnabled(false);
+        }else {
             menu.findItem(R.id.sort_by_highest_rated).setEnabled(true);
             menu.findItem(R.id.sort_by_most_popular).setEnabled(false);
+            menu.findItem(R.id.favorite_movies).setEnabled(true);
         }
     }
 
@@ -256,6 +265,10 @@ public class MoviePosterFragment extends Fragment {
                 break;
             case R.id.sort_by_most_popular:
                 mSortPref = SORT_BY_MOST_POPULAR;
+                break;
+            case R.id.favorite_movies:
+                mSortPref = FAVORITE_MOVIES;
+                break;
         }
 
         mMoviePosterGrid.scrollToPosition(0);

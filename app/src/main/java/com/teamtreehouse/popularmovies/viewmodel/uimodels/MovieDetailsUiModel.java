@@ -1,7 +1,5 @@
 package com.teamtreehouse.popularmovies.viewmodel.uimodels;
 
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.responses.reviews.Review;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +10,8 @@ public class MovieDetailsUiModel {
     private String mReleaseDate;
     private String mUserRating;
     private String mPlotSynopsis;
-    private List<String> mTrailerIds;
-    private List<Review> mReviews;
+    private List<TrailerUiModel> mTrailers;
+    private List<ReviewUiModel> mReviews;
 
     public MovieDetailsUiModel(String originalTitle,
                                String imageThumbnailUrl,
@@ -27,7 +25,7 @@ public class MovieDetailsUiModel {
         mUserRating = userRating;
         mPlotSynopsis = plotSynopsis;
 
-        mTrailerIds = new ArrayList<>();
+        mTrailers = new ArrayList<>();
         mReviews = new ArrayList<>();
     }
 
@@ -51,19 +49,19 @@ public class MovieDetailsUiModel {
         return mPlotSynopsis;
     }
 
-    public List<String> getTrailerIds() {
-        return mTrailerIds;
+    public List<TrailerUiModel> getTrailers() {
+        return mTrailers;
     }
 
-    public void setTrailerIds(List<String> trailerIds) {
-        mTrailerIds = trailerIds;
+    public void setTrailers(List<TrailerUiModel> trailers) {
+        mTrailers = trailers;
     }
 
-    public List<Review> getReviews() {
+    public List<ReviewUiModel> getReviews() {
         return mReviews;
     }
 
-    public void setReviews(List<Review> reviews) {
+    public void setReviews(List<ReviewUiModel> reviews) {
         mReviews = reviews;
     }
 }

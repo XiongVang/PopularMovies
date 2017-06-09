@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import dagger.Component;
 
 @Singleton
-@Component(modules = {ApiModule.class,DataModelModule.class})
+@Component(modules = {ApiModule.class,DataModelModule.class,ApplicationModule.class})
 public interface DataComponent {
     void inject(MoviePosterFragment fragment);
     void inject(MovieDetailsFragment fragment);

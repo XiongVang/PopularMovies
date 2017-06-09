@@ -1,6 +1,6 @@
 package com.teamtreehouse.popularmovies.di;
 
-import com.teamtreehouse.popularmovies.datamodel.datasource.remote.api.MovieDbApiService;
+import com.teamtreehouse.popularmovies.datamodel.datasources.remote.api.MovieDbApiService;
 
 import javax.inject.Singleton;
 

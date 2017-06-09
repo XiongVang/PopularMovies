@@ -3,6 +3,7 @@ package com.teamtreehouse.popularmovies;
 import android.app.Application;
 
 import com.teamtreehouse.popularmovies.di.ApiModule;
+import com.teamtreehouse.popularmovies.di.ApplicationModule;
 import com.teamtreehouse.popularmovies.di.DaggerDataComponent;
 import com.teamtreehouse.popularmovies.di.DataComponent;
 import com.teamtreehouse.popularmovies.di.DataModelModule;
@@ -21,6 +22,7 @@ public class PopularMoviesApp extends Application {
         mDataComponent = DaggerDataComponent.builder()
                 .apiModule(new ApiModule(API_KEY))
                 .dataModelModule(new DataModelModule())
+                .applicationModule(new ApplicationModule(this))
                 .build();
 
     }
