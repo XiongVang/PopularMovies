@@ -43,11 +43,6 @@ public class DataModelImpl implements DataModel {
                 .map(this::mapMovieResultToMovieModels);
     }
 
-    @Override
-    public Single<List<MovieModel>> getFavoriteMovies() {
-        return localDataSource.getFavoriteMovies();
-    }
-
     private List<MovieModel> mapMovieResultToMovieModels(List<MovieResult> movieResults){
 
         return movieResults.stream().map(movieResult -> new MovieModel(
@@ -61,7 +56,7 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public Single<MovieModel> getMovieDetails(@NonNull String movieId) {
+    public Single<MovieModel> getMovieModel(@NonNull String movieId) {
         return remoteDataSource.getMovieDetails(movieId)
                 .map(this::mapMovieDetailsToMovieModel);
     }
@@ -77,7 +72,7 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public Single<List<ReviewModel>> getMovieReviews(@NonNull String movieId) {
+    public Single<List<ReviewModel>> getReviewModels(@NonNull String movieId) {
         return remoteDataSource.getMovieReviews(movieId)
                 .map(this::mapReviewsToReviewModels);
     }
@@ -92,7 +87,7 @@ public class DataModelImpl implements DataModel {
     }
 
     @Override
-    public Single<List<TrailerModel>> getMovieTrailers(@NonNull String movieId) {
+    public Single<List<TrailerModel>> getTrailerModels(@NonNull String movieId) {
         return remoteDataSource.getMovieTrailers(movieId)
                 .map(this::mapVideosToTrailerModels);
     }
@@ -111,5 +106,24 @@ public class DataModelImpl implements DataModel {
         return localDataSource.addToFavorites(movie,reviews,trailers);
     }
 
+    @Override
+    public Single<List<MovieModel>> getFavoriteMovies() {
+        return localDataSource.getFavoriteMovies();
+    }
+
+    @Override
+    public Single<MovieModel> getMovieModelFromFavorites(@NonNull String movieId) {
+        return localDataSource.getMovie(movieId);
+    }
+
+    @Override
+    public Single<List<ReviewModel>> getReviewModelsFromFavorites(@NonNull String movieId) {
+        return localDataSource.getReviews(movieId);
+    }
+
+    @Override
+    public Single<List<TrailerModel>> getTrailerModelsFromFavorites(@NonNull String movieId) {
+        return localDataSource.getTrailers(movieId);
+    }
 
 }

@@ -9,8 +9,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 public class MovieContentProvider extends ContentProvider {
+
+    private static final String TAG = "MovieContentProvider";
 
     public static final int MOVIES = 100;
     public static final int MOVIES_WITH_ID = 101;
@@ -61,27 +64,27 @@ public class MovieContentProvider extends ContentProvider {
         switch (match) {
 
             case MOVIES:
-                id = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
+                id = db.insert(MovieContract.Movie.TABLE_NAME, null, values);
                 if ( id > 0 ) {
-                    returnUri = ContentUris.withAppendedId(MovieContract.MovieEntry.MOVIES_URI, id);
+                    returnUri = ContentUris.withAppendedId(MovieContract.Movie.MOVIES_URI, id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
                 break;
 
             case TRAILERS:
-                id = db.insert(MovieContract.TrailerEntry.TABLE_NAME, null, values);
+                id = db.insert(MovieContract.Trailer.TABLE_NAME, null, values);
                 if ( id > 0 ) {
-                    returnUri = ContentUris.withAppendedId(MovieContract.TrailerEntry.TRAILERS_URI, id);
+                    returnUri = ContentUris.withAppendedId(MovieContract.Trailer.TRAILERS_URI, id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
                 break;
 
             case REVIEWS:
-                id = db.insert(MovieContract.ReviewEntry.TABLE_NAME, null, values);
+                id = db.insert(MovieContract.Review.TABLE_NAME, null, values);
                 if ( id > 0 ) {
-                    returnUri = ContentUris.withAppendedId(MovieContract.ReviewEntry.REVIEWS_URI, id);
+                    returnUri = ContentUris.withAppendedId(MovieContract.Review.REVIEWS_URI, id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
@@ -103,16 +106,21 @@ public class MovieContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
+        Log.d(TAG, "query: " + uri);
+
         final SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
 
         int match = sUriMatcher.match(uri);
+
+        Log.d(TAG, "query: " + match);
+
         Cursor retCursor;
 
         switch (match) {
 
             case MOVIES:
             case MOVIES_WITH_ID:
-                retCursor =  db.query(MovieContract.MovieEntry.TABLE_NAME,
+                retCursor =  db.query(MovieContract.Movie.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -123,7 +131,7 @@ public class MovieContentProvider extends ContentProvider {
 
             case TRAILERS:
             case TRAILERS_WITH_ID:
-                retCursor =  db.query(MovieContract.TrailerEntry.TABLE_NAME,
+                retCursor =  db.query(MovieContract.Trailer.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -134,7 +142,7 @@ public class MovieContentProvider extends ContentProvider {
 
             case REVIEWS:
             case REVIEWS_WITH_ID:
-                retCursor =  db.query(MovieContract.ReviewEntry.TABLE_NAME,
+                retCursor =  db.query(MovieContract.Review.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -149,8 +157,6 @@ public class MovieContentProvider extends ContentProvider {
 
         // COMPLETED (4) Set a notification URI on the Cursor and return that Cursor
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
-
-        db.close();
 
         // Return the desired Cursor
         return retCursor;

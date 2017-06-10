@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.functions.Function;
 
 @Singleton
 public class MovieDetailsViewModel {
@@ -35,19 +36,46 @@ public class MovieDetailsViewModel {
     }
 
     @NonNull
-    public Single getMovieDetails(@NonNull String movieId) {
+    public Single<MovieDetailsUiModel> getMovieDetailsUiModel(@NonNull String movieId) {
         this.movieId = movieId;
-        return Single.zip(dataModel.getMovieDetails(movieId),
-                dataModel.getMovieTrailers(movieId).onErrorReturnItem(new ArrayList<>()),
-                dataModel.getMovieReviews(movieId).onErrorReturnItem(new ArrayList<>()),
-                (movieDetails, videos, reviews) -> {
-                    MovieDetailsUiModel movieDetailsUiModel = toMovieDetailsUiModel(movieDetails);
-                    movieDetailsUiModel.setReviews(toReviewUiModels(reviews));
-                    movieDetailsUiModel.setTrailers(toTrailerUiModels(videos));
 
-                    movie = movieDetailsUiModel;
-                    return movie;
+        return dataModel.getMovieModelFromFavorites(movieId)
+                .flatMap(new Function<MovieModel, Single<MovieDetailsUiModel>>() {
+                    @Override
+                    public Single<MovieDetailsUiModel> apply(MovieModel movieModel) throws Exception {
+                        if(movieModel != null){
+                            return fetchMovieDetailsFromFavorites(movieId);
+                        } else {
+                            return fetchMovieDetailsFromApi(movieId);
+                        }
+                    }
                 });
+    }
+
+    private Single<MovieDetailsUiModel> fetchMovieDetailsFromApi(String movieId){
+        return Single.zip(dataModel.getMovieModel(movieId).onErrorReturnItem(null),
+                dataModel.getReviewModels(movieId).onErrorReturnItem(new ArrayList<>()),
+                dataModel.getTrailerModels(movieId).onErrorReturnItem(new ArrayList<>()),
+                this::mapToMovieDetailsUiModel);
+    }
+
+    private Single<MovieDetailsUiModel> fetchMovieDetailsFromFavorites(String movieId){
+        return Single.zip(dataModel.getMovieModelFromFavorites(movieId),
+                dataModel.getReviewModelsFromFavorites(movieId),
+                dataModel.getTrailerModelsFromFavorites(movieId),
+                this::mapToMovieDetailsUiModel);
+    }
+
+    private MovieDetailsUiModel mapToMovieDetailsUiModel( MovieModel movieModel,
+                                                          List<ReviewModel> reviews,
+                                                          List<TrailerModel> trailers){
+        MovieDetailsUiModel movieDetailsUiModel = toMovieDetailsUiModel(movieModel);
+        movieDetailsUiModel.setReviews(toReviewUiModels(reviews));
+        movieDetailsUiModel.setTrailers(toTrailerUiModels(trailers));
+
+        this.movie = movieDetailsUiModel;
+
+        return this.movie;
     }
 
     public Completable addToFavorites() {
@@ -94,6 +122,11 @@ public class MovieDetailsViewModel {
         return trailers.stream()
                 .map(trailer -> new TrailerUiModel(trailer.getVideoKey()))
                 .collect(Collectors.toList());
+    }
+
+    public Single<Boolean> isFavorite(String movieId){
+        return dataModel.getMovieModelFromFavorites(movieId)
+                .map(movieModel -> movieModel != null);
     }
 }
 

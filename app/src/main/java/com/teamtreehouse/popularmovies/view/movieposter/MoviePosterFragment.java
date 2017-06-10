@@ -117,7 +117,7 @@ public class MoviePosterFragment extends Fragment {
             return;
         }
 
-        fetchMoviesPosters();
+        fetchMoviePosters();
 
         subscribeToListItemClickListener();
 
@@ -163,7 +163,7 @@ public class MoviePosterFragment extends Fragment {
 
     }
 
-    private void fetchMoviesPosters() {
+    private void fetchMoviePosters() {
         showProgressBar();
 
         Single<List<MoviePosterUiModel>> moviesData;
@@ -191,7 +191,7 @@ public class MoviePosterFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(TAG, "onError: fetchMoviesPosters()", e);
+                        Log.e(TAG, "onError: fetchMoviePosters()", e);
                         showNetworkError();
                     }
                 });
@@ -272,7 +272,7 @@ public class MoviePosterFragment extends Fragment {
         }
 
         mMoviePosterGrid.scrollToPosition(0);
-        fetchMoviesPosters();
+        fetchMoviePosters();
         getActivity().invalidateOptionsMenu();
 
         return super.onOptionsItemSelected(item);

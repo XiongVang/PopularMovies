@@ -14,6 +14,8 @@ public interface LocalDataSource {
 
     Single<List<MovieModel>> getFavoriteMovies();
 
+    Single<MovieModel> getMovie(String movieId);
+
     Single<List<ReviewModel>> getReviews(String movieId);
 
     Single<List<TrailerModel>> getTrailers(String movieId);

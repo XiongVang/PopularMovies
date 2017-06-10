@@ -36,37 +36,37 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
 
-        final String CREATE_MOVIES_TABLE = "CREATE TABLE "  + MovieContract.MovieEntry.TABLE_NAME +
+        final String CREATE_MOVIES_TABLE = "CREATE TABLE "  + MovieContract.Movie.TABLE_NAME +
                 " (" +
-                MovieContract.MovieEntry.KEY_MOVIE_ID           + " TEXT PRIMARY KEY, " +
-                MovieContract.MovieEntry.COLUMN_TITLE           + " TEXT NOT NULL, " +
-                MovieContract.MovieEntry.COLUMN_POSTER_PATH     + " TEXT NOT NULL, " +
-                MovieContract.MovieEntry.COLUMN_RELEASE_DATE    + " TEXT NOT NULL, " +
-                MovieContract.MovieEntry.COLUMN_USER_RATING     + " TEXT NOT NULL, " +
-                MovieContract.MovieEntry.COLUMN_PLOT_SYNOPSIS   + " TEXT NOT NULL " +
+                MovieContract.Movie.KEY_MOVIE_ID           + " TEXT PRIMARY KEY, " +
+                MovieContract.Movie.COLUMN_TITLE           + " TEXT NOT NULL, " +
+                MovieContract.Movie.COLUMN_POSTER_PATH     + " TEXT NOT NULL, " +
+                MovieContract.Movie.COLUMN_RELEASE_DATE    + " TEXT NOT NULL, " +
+                MovieContract.Movie.COLUMN_USER_RATING     + " TEXT NOT NULL, " +
+                MovieContract.Movie.COLUMN_PLOT_SYNOPSIS   + " TEXT NOT NULL " +
                 ");";
 
         Log.d(TAG, "onCreate: " + CREATE_MOVIES_TABLE);
         db.execSQL(CREATE_MOVIES_TABLE);
 
 
-        final String CREATE_REVIEWS_TABLE = "CREATE TABLE "  + MovieContract.ReviewEntry.TABLE_NAME +
+        final String CREATE_REVIEWS_TABLE = "CREATE TABLE "  + MovieContract.Review.TABLE_NAME +
                 " (" +
-                MovieContract.ReviewEntry.KEY_MOVIE_ID           + " TEXT NOT NULL, " +
-                MovieContract.ReviewEntry.COLUMN_AUTHOR          + " TEXT NOT NULL, " +
-                MovieContract.ReviewEntry.COLUMN_CONTENT         + " TEXT NOT NULL, " +
-                "FOREIGN KEY(" + MovieContract.ReviewEntry.KEY_MOVIE_ID + ") " +
-                "REFERENCES " + MovieContract.MovieEntry.TABLE_NAME + "(" + MovieContract.MovieEntry.KEY_MOVIE_ID + ")" +
+                MovieContract.Review.KEY_MOVIE_ID           + " TEXT NOT NULL, " +
+                MovieContract.Review.COLUMN_AUTHOR          + " TEXT NOT NULL, " +
+                MovieContract.Review.COLUMN_CONTENT         + " TEXT NOT NULL, " +
+                "FOREIGN KEY(" + MovieContract.Review.KEY_MOVIE_ID + ") " +
+                "REFERENCES " + MovieContract.Movie.TABLE_NAME + "(" + MovieContract.Movie.KEY_MOVIE_ID + ")" +
                 ");";
         Log.d(TAG, "onCreate: " + CREATE_REVIEWS_TABLE);
         db.execSQL(CREATE_REVIEWS_TABLE);
 
-        final String CREATE_TRAILERS_TABLE = "CREATE TABLE "  + MovieContract.TrailerEntry.TABLE_NAME +
+        final String CREATE_TRAILERS_TABLE = "CREATE TABLE "  + MovieContract.Trailer.TABLE_NAME +
                 " (" +
-                MovieContract.TrailerEntry.KEY_MOVIE_ID           + " TEXT NOT NULL, " +
-                MovieContract.TrailerEntry.COLUMN_VIDEO_KEY       + " TEXT NOT NULL, " +
-                "FOREIGN KEY(" + MovieContract.TrailerEntry.KEY_MOVIE_ID + ") " +
-                "REFERENCES " + MovieContract.MovieEntry.TABLE_NAME + "(" + MovieContract.MovieEntry.KEY_MOVIE_ID + ")" +
+                MovieContract.Trailer.KEY_MOVIE_ID           + " TEXT NOT NULL, " +
+                MovieContract.Trailer.COLUMN_VIDEO_KEY       + " TEXT NOT NULL, " +
+                "FOREIGN KEY(" + MovieContract.Trailer.KEY_MOVIE_ID + ") " +
+                "REFERENCES " + MovieContract.Movie.TABLE_NAME + "(" + MovieContract.Movie.KEY_MOVIE_ID + ")" +
                 ");";
         Log.d(TAG, "onCreate: " + CREATE_TRAILERS_TABLE);
         db.execSQL(CREATE_TRAILERS_TABLE);

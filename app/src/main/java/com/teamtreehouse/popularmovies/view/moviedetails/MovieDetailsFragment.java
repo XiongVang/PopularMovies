@@ -117,27 +117,6 @@ public class MovieDetailsFragment extends Fragment {
 
         mUnbinder = ButterKnife.bind(this, view);
 
-        mFavoritesButton.setOnClickListener(v -> {
-
-            mMovieDetailsViewModel.addToFavorites()
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new DisposableCompletableObserver() {
-                        @Override
-                        public void onComplete() {
-                            v.setBackgroundColor(Color.RED);
-                            v.setEnabled(false);
-                            Toast.makeText(mContext, "Movie has been added to favorites",Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.e(TAG, "onError: addToFavorites()", e);
-                            Toast.makeText(mContext, "ERROR: Not able to save to favorites",Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        });
-
         showNoTrailersFound();
         setupTrailersRecyclerView();
 
@@ -181,7 +160,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private void bind() {
 
-        mMovieDetailsViewModel.getMovieDetails(mMovieId)
+        mMovieDetailsViewModel.getMovieDetailsUiModel(mMovieId)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisposableSingleObserver<MovieDetailsUiModel>() {
@@ -191,12 +170,13 @@ public class MovieDetailsFragment extends Fragment {
                         populateDetails();
                         loadTrailers(uiModel.getTrailers());
                         loadReviews(uiModel.getReviews());
+                        setupFavoritesButton();
                         showMovieDetails();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(TAG, "getMovieDetails() - onError: ", e);
+                        Log.e(TAG, "getMovieModel() - onError: ", e);
                     }
                 });
     }
@@ -256,6 +236,52 @@ public class MovieDetailsFragment extends Fragment {
         mReleaseDate.setText(mMovieDetailsUiModel.getReleaseDate());
         mAvgRating.setText(String.valueOf(mMovieDetailsUiModel.getUserRating()));
         mPlotSynopsis.setText(mMovieDetailsUiModel.getPlotSynopsis());
+    }
+
+    private void setupFavoritesButton(){
+
+        mMovieDetailsViewModel.isFavorite(mMovieId)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DisposableSingleObserver<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean value) {
+
+                        if(value){
+                            mFavoritesButton.setBackgroundColor(Color.RED);
+                            mFavoritesButton.setEnabled(false);
+                        } else {
+
+                            mFavoritesButton.setOnClickListener(v -> {
+
+                                mMovieDetailsViewModel.addToFavorites()
+                                        .subscribeOn(Schedulers.newThread())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new DisposableCompletableObserver() {
+                                            @Override
+                                            public void onComplete() {
+                                                v.setBackgroundColor(Color.RED);
+                                                v.setEnabled(false);
+                                                Toast.makeText(mContext, "Movie has been added to favorites",Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onError(Throwable e) {
+                                                Log.e(TAG, "onError: addToFavorites()", e);
+                                                Toast.makeText(mContext, "ERROR: Not able to save to favorites",Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            });
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                });
+
     }
 
 

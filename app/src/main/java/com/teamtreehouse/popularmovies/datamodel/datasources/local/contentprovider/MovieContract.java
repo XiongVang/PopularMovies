@@ -36,9 +36,9 @@ public class MovieContract {
     public static final String PATH_TRAILERS = "trailers";
 
     /* Inner class that defines the contents of the movie table */
-    public static final class MovieEntry implements BaseColumns {
+    public static final class Movie implements BaseColumns {
 
-        // MovieEntry content URI = base content URI + path
+        // Movie content URI = base content URI + path
         public static final Uri MOVIES_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIES).build();
 
@@ -55,9 +55,9 @@ public class MovieContract {
 
     }
 
-    public static final class TrailerEntry implements BaseColumns {
+    public static final class Trailer implements BaseColumns {
 
-        // TrailerEntry content URI = base content URI + path
+        // Trailer content URI = base content URI + path
         public static final Uri TRAILERS_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRAILERS).build();
 
@@ -69,9 +69,9 @@ public class MovieContract {
 
     }
 
-    public static final class ReviewEntry implements BaseColumns {
+    public static final class Review implements BaseColumns {
 
-        // ReviewEntry content URI = base content URI + path
+        // Review content URI = base content URI + path
         public static final Uri REVIEWS_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEWS).build();
 
