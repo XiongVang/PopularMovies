@@ -22,4 +22,6 @@ public interface LocalDataSource {
 
     Completable addToFavorites(MovieModel movie, List<ReviewModel> reviews, List<TrailerModel> trailers);
 
+    Single<Boolean> isFavorite(String movieId);
+
 }

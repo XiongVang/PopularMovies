@@ -18,13 +18,11 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableObserver;
 import io.reactivex.Single;
-import io.reactivex.SingleObserver;
-
-import static android.content.ContentValues.TAG;
 
 public class LocalDataSourceImpl implements LocalDataSource {
+
+    private static final String TAG = "LocalDataSourceImpl";
 
     private final ContentResolver mContentResolver;
 
@@ -35,43 +33,38 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
     @Override
     public Single<List<MovieModel>> getFavoriteMovies() {
+        return Single.create(emitter -> {
+            try {
 
-        return new Single<List<MovieModel>>() {
-            @Override
-            protected void subscribeActual(SingleObserver<? super List<MovieModel>> observer) {
+                Cursor cursor = queryFavoriteMovies();
 
-                try {
+                if (cursor.getCount() == 0) {
+                    emitter.onSuccess(new ArrayList<>());
+                } else {
 
-                    Cursor cursor = queryFavoriteMovies();
+                    List<MovieModel> movies = new ArrayList<>();
 
-                    if (cursor == null) {
-                        observer.onSuccess(new ArrayList<MovieModel>());
-                    } else {
+                    while (cursor.moveToNext()) {
+                        Log.d(TAG, "subscribeActual: " + cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_TITLE)));
 
-                        List<MovieModel> movies = new ArrayList<>();
-
-                        while (cursor.moveToNext()) {
-                            Log.d(TAG, "subscribeActual: " + cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_TITLE)));
-
-                            movies.add(new MovieModel(
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.KEY_MOVIE_ID)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_TITLE)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_POSTER_PATH)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_RELEASE_DATE)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_USER_RATING)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_PLOT_SYNOPSIS)))
-                            );
-                        }
-
-                        observer.onSuccess(movies);
-                        cursor.close();
+                        movies.add(new MovieModel(
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.KEY_MOVIE_ID)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_TITLE)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_POSTER_PATH)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_RELEASE_DATE)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_USER_RATING)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_PLOT_SYNOPSIS)))
+                        );
                     }
 
-                } catch (Exception e) {
-                    observer.onError(e);
+                    emitter.onSuccess(movies);
+                    cursor.close();
                 }
+
+            } catch (Exception e) {
+                emitter.onError(e);
             }
-        };
+        });
     }
 
     private Cursor queryFavoriteMovies() {
@@ -103,36 +96,36 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
     @Override
     public Single<MovieModel> getMovie(String movieId) {
-        return new Single<MovieModel>() {
-            @Override
-            protected void subscribeActual(SingleObserver<? super MovieModel> observer) {
-                try {
-                    Cursor cursor = queryMovie(movieId);
+        return Single.create(emitter -> {
+            try {
+                Cursor cursor = queryMovie(movieId);
+                Log.d(TAG, "getMovie() - cursor: " + cursor.getCount());
+                if (cursor.getCount() == 0) {
+                    emitter.onError(new Throwable("ERROR: " + movieId + " not found"));
+                } else {
 
-                    if (cursor == null) {
-                        observer.onSuccess(null);
-                    } else {
+                    MovieModel movieModel = null;
 
-                        MovieModel movieModel = null;
+                    while (cursor.moveToNext()) {
+                        movieModel = new MovieModel(
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.KEY_MOVIE_ID)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_TITLE)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_POSTER_PATH)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_RELEASE_DATE)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_USER_RATING)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_PLOT_SYNOPSIS)));
 
-                        while (cursor.moveToNext()) {
-                            movieModel = new MovieModel(
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.KEY_MOVIE_ID)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_TITLE)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_POSTER_PATH)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_RELEASE_DATE)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_USER_RATING)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.Movie.COLUMN_PLOT_SYNOPSIS)));
-                        }
-                        cursor.close();
-                        observer.onSuccess(movieModel);
                     }
-
-                } catch (Exception e) {
-                    observer.onError(e);
+                    Log.d(TAG, "subscribeActual: getMovie - movieModel " + (movieModel == null));
+                    emitter.onSuccess(movieModel);
+                    cursor.close();
                 }
+
+            } catch (Exception e) {
+                emitter.onError(e);
             }
-        };
+        });
+
     }
 
     private Cursor queryMovie(String movieId) {
@@ -147,7 +140,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
         // selection - A filter declaring which rows to return, formatted as an
         // SQL WHERE clause (excluding the WHERE itself). Passing null will
         // return all rows for the given URI.
-        String selection = "'" + MovieContract.Movie.KEY_MOVIE_ID + " = " + movieId + "'";
+        String selection = MovieContract.Movie.KEY_MOVIE_ID + " = " + movieId;
 
         // selectionArgs- You may include ?s in selection, which will be
         // replaced by the values from selectionArgs, in the order that they
@@ -164,34 +157,38 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
     @Override
     public Single<List<ReviewModel>> getReviews(String movieId) {
-        return new Single<List<ReviewModel>>() {
-            @Override
-            protected void subscribeActual(SingleObserver<? super List<ReviewModel>> observer) {
-                try {
-                    Cursor cursor = queryReviews(movieId);
 
-                    if (cursor == null) {
-                        observer.onSuccess(new ArrayList<ReviewModel>());
-                    } else {
+        return Single.create(emitter -> {
+            try {
 
-                        List<ReviewModel> reviewModels = new ArrayList<>();
+                Cursor cursor = queryReviews(movieId);
 
-                        while (cursor.moveToNext()) {
-                            reviewModels.add(new ReviewModel(
-                                    cursor.getString(cursor.getColumnIndex(MovieContract.Review.KEY_MOVIE_ID)),
-                                    cursor.getString(cursor.getColumnIndex(MovieContract.Review.COLUMN_AUTHOR)),
-                                    cursor.getString(cursor.getColumnIndex(MovieContract.Review.COLUMN_CONTENT))
-                            ));
-                        }
-                        cursor.close();
-                        observer.onSuccess(reviewModels);
+                Log.d(TAG, "getReviews() - cursor: " + cursor.getCount());
+
+                if (cursor.getCount() == 0) {
+                    emitter.onSuccess(new ArrayList<>());
+                } else {
+
+                    List<ReviewModel> reviewModels = new ArrayList<>();
+
+                    while (cursor.moveToNext()) {
+                        reviewModels.add(new ReviewModel(
+                                cursor.getString(cursor.getColumnIndex(MovieContract.Review.KEY_MOVIE_ID)),
+                                cursor.getString(cursor.getColumnIndex(MovieContract.Review.COLUMN_AUTHOR)),
+                                cursor.getString(cursor.getColumnIndex(MovieContract.Review.COLUMN_CONTENT))
+                        ));
                     }
 
-                } catch (Exception e) {
-                    observer.onError(e);
+                    Log.d(TAG, "getReviews() - author: " + (reviewModels == null));
+                    emitter.onSuccess(reviewModels);
+                    cursor.close();
                 }
+
+            } catch (Exception e) {
+                emitter.onError(e);
             }
-        };
+        });
+
     }
 
     private Cursor queryReviews(String movieId) {
@@ -206,7 +203,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
         // selection - A filter declaring which rows to return, formatted as an
         // SQL WHERE clause (excluding the WHERE itself). Passing null will
         // return all rows for the given URI.
-        String selection = "'" + MovieContract.Review.KEY_MOVIE_ID + " = " + movieId + "'";
+        String selection = MovieContract.Review.KEY_MOVIE_ID + " = " + movieId;
 
         // selectionArgs- You may include ?s in selection, which will be
         // replaced by the values from selectionArgs, in the order that they
@@ -224,33 +221,33 @@ public class LocalDataSourceImpl implements LocalDataSource {
     @Override
     public Single<List<TrailerModel>> getTrailers(String movieId) {
 
-        return new Single<List<TrailerModel>>() {
-            @Override
-            protected void subscribeActual(SingleObserver<? super List<TrailerModel>> observer) {
-                try {
-                    Cursor cursor = queryTrailers(movieId);
+        return Single.create(emitter -> {
+            try {
+                Cursor cursor = queryTrailers(movieId);
+                Log.d(TAG, "getTrailers() - cursor: " + cursor.getCount());
 
-                    if (cursor == null) {
-                        observer.onError(new Throwable("ERROR: " + "ContentResolver.query()"));
-                    } else {
+                if (cursor.getCount() == 0) {
+                    emitter.onSuccess(new ArrayList<>());
+                } else {
 
-                        List<TrailerModel> trailerModels = new ArrayList<>();
+                    List<TrailerModel> trailerModels = new ArrayList<>();
 
-                        while (cursor.moveToNext()) {
-                            trailerModels.add(new TrailerModel(
-                                    cursor.getString(cursor.getColumnIndex(MovieContract.Trailer.KEY_MOVIE_ID)),
-                                    cursor.getString(cursor.getColumnIndex(MovieContract.Trailer.COLUMN_VIDEO_KEY))
-                            ));
-                        }
-                        cursor.close();
-                        observer.onSuccess(trailerModels);
+                    while (cursor.moveToNext()) {
+                        trailerModels.add(new TrailerModel(
+                                cursor.getString(cursor.getColumnIndex(MovieContract.Trailer.KEY_MOVIE_ID)),
+                                cursor.getString(cursor.getColumnIndex(MovieContract.Trailer.COLUMN_VIDEO_KEY))
+                        ));
                     }
-
-                } catch (Exception e) {
-                    observer.onError(e);
+                    Log.d(TAG, "getTrailers() - videoKey: " + (trailerModels == null));
+                    emitter.onSuccess(trailerModels);
+                    cursor.close();
                 }
+
+            } catch (Exception e) {
+                emitter.onError(e);
+
             }
-        };
+        });
     }
 
     private Cursor queryTrailers(String movieId) {
@@ -265,7 +262,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
         // selection - A filter declaring which rows to return, formatted as an
         // SQL WHERE clause (excluding the WHERE itself). Passing null will
         // return all rows for the given URI.
-        String selection = "'" + MovieContract.Trailer.KEY_MOVIE_ID + " = " + movieId + "'";
+        String selection = MovieContract.Trailer.KEY_MOVIE_ID + " = " + movieId;
 
         // selectionArgs- You may include ?s in selection, which will be
         // replaced by the values from selectionArgs, in the order that they
@@ -282,25 +279,22 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
     @Override
     public Completable addToFavorites(MovieModel movie, List<ReviewModel> reviews, List<TrailerModel> trailers) {
-        return new Completable() {
-            @Override
-            protected void subscribeActual(CompletableObserver s) {
-                try {
-                    saveMovieToDb(movie);
-                    saveReviewsToDb(reviews);
-                    saveTrailersToDb(trailers);
 
-                    Log.d(TAG, "subscribeActual: addToFavorites() - completed");
-                    s.onComplete();
-                } catch (SQLException e) {
-                    Log.e(TAG, "subscribeActual: addToFavorites()", e);
-                    s.onError(e);
-                } catch (Exception e) {
-                    Log.e(TAG, "subscribeActual: addToFavorites()", e);
-                    s.onError(e);
-                }
+        return Completable.create(emitter -> {
+            try {
+                saveMovieToDb(movie);
+                saveReviewsToDb(reviews);
+                saveTrailersToDb(trailers);
+                Log.d(TAG, "subscribeActual: addToFavorites() - completed");
+                emitter.onComplete();
+            } catch (SQLException e) {
+                Log.e(TAG, "subscribeActual: addToFavorites()", e);
+                emitter.onError(e);
+            } catch (Exception e) {
+                Log.e(TAG, "subscribeActual: addToFavorites()", e);
+                emitter.onError(e);
             }
-        };
+        });
     }
 
     private void saveMovieToDb(MovieModel movie) {
@@ -345,5 +339,15 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
             mContentResolver.insert(MovieContract.Trailer.TRAILERS_URI, trailerContent);
         }
+    }
+
+    @Override
+    public Single<Boolean> isFavorite(String movieId) {
+
+        return Single.create(emitter -> {
+            Cursor cursor = queryMovie(movieId);
+            emitter.onSuccess(cursor.getCount() > 0);
+            cursor.close();
+        });
     }
 }

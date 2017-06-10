@@ -1,6 +1,7 @@
 package com.teamtreehouse.popularmovies.viewmodel;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.teamtreehouse.popularmovies.datamodel.DataModel;
 import com.teamtreehouse.popularmovies.datamodel.models.MovieModel;
@@ -19,7 +20,6 @@ import javax.inject.Singleton;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
 
 @Singleton
 public class MovieDetailsViewModel {
@@ -28,7 +28,8 @@ public class MovieDetailsViewModel {
     private final DataModel dataModel;
 
     private String movieId;
-    private MovieDetailsUiModel movie;
+    private MovieDetailsUiModel movieDetailsUiModel;
+    private boolean isFavorite;
 
     @Inject
     public MovieDetailsViewModel(DataModel dataModel) {
@@ -39,63 +40,71 @@ public class MovieDetailsViewModel {
     public Single<MovieDetailsUiModel> getMovieDetailsUiModel(@NonNull String movieId) {
         this.movieId = movieId;
 
-        return dataModel.getMovieModelFromFavorites(movieId)
-                .flatMap(new Function<MovieModel, Single<MovieDetailsUiModel>>() {
-                    @Override
-                    public Single<MovieDetailsUiModel> apply(MovieModel movieModel) throws Exception {
-                        if(movieModel != null){
-                            return fetchMovieDetailsFromFavorites(movieId);
-                        } else {
-                            return fetchMovieDetailsFromApi(movieId);
-                        }
+        return dataModel.isInFavorites(movieId)
+                .flatMap(isFavorite -> {
+                    if (!isFavorite) {
+                        return fetchMovieDetailsFromApi(movieId);
+                    } else {
+                        return fetchMovieDetailsFromFavorites(movieId);
                     }
+                });
+}
+
+    private Single<MovieDetailsUiModel> fetchMovieDetailsFromApi(String movieId) {
+        Log.d(TAG, "fetchMovieDetailsFromApi: ");
+        return Single.zip(
+                dataModel.getMovieModel(movieId),
+                dataModel.getReviewModels(movieId),
+                dataModel.getTrailerModels(movieId),
+                (movieModel, reviewModels, trailerModels) -> {
+                    Log.d(TAG, "fetchMovieDetailsFromApi: mapper");
+                    MovieDetailsUiModel movie = toMovieDetailsUiModel(movieModel);
+                    movie.setReviews(toReviewUiModels(reviewModels));
+                    movie.setTrailers(toTrailerUiModels(trailerModels));
+
+                    movieDetailsUiModel = movie;
+                    return movieDetailsUiModel;
                 });
     }
 
-    private Single<MovieDetailsUiModel> fetchMovieDetailsFromApi(String movieId){
-        return Single.zip(dataModel.getMovieModel(movieId).onErrorReturnItem(null),
-                dataModel.getReviewModels(movieId).onErrorReturnItem(new ArrayList<>()),
-                dataModel.getTrailerModels(movieId).onErrorReturnItem(new ArrayList<>()),
-                this::mapToMovieDetailsUiModel);
-    }
-
-    private Single<MovieDetailsUiModel> fetchMovieDetailsFromFavorites(String movieId){
-        return Single.zip(dataModel.getMovieModelFromFavorites(movieId),
+    private Single<MovieDetailsUiModel> fetchMovieDetailsFromFavorites(String movieId) {
+        Log.d(TAG, "fetchMovieDetailsFromFavorites: ");
+        return Single.zip(
+                dataModel.getMovieModelFromFavorites(movieId),
                 dataModel.getReviewModelsFromFavorites(movieId),
                 dataModel.getTrailerModelsFromFavorites(movieId),
-                this::mapToMovieDetailsUiModel);
+
+                (movieModel, reviewModels, trailerModels) -> {
+
+                    Log.d(TAG, "fetchMovieDetailsFromFavorites: mapper");
+                    MovieDetailsUiModel movie = toMovieDetailsUiModel(movieModel);
+                    movie.setReviews(toReviewUiModels(reviewModels));
+                    movie.setTrailers(toTrailerUiModels(trailerModels));
+
+                    movieDetailsUiModel = movie;
+                    return movieDetailsUiModel;
+                });
     }
 
-    private MovieDetailsUiModel mapToMovieDetailsUiModel( MovieModel movieModel,
-                                                          List<ReviewModel> reviews,
-                                                          List<TrailerModel> trailers){
-        MovieDetailsUiModel movieDetailsUiModel = toMovieDetailsUiModel(movieModel);
-        movieDetailsUiModel.setReviews(toReviewUiModels(reviews));
-        movieDetailsUiModel.setTrailers(toTrailerUiModels(trailers));
-
-        this.movie = movieDetailsUiModel;
-
-        return this.movie;
-    }
 
     public Completable addToFavorites() {
 
         MovieModel movieModel = new MovieModel(
                 movieId,
-                movie.getOriginalTitle(),
-                movie.getImageThumbnailUrl(),
-                movie.getReleaseDate(),
-                movie.getUserRating(),
-                movie.getPlotSynopsis()
+                movieDetailsUiModel.getOriginalTitle(),
+                movieDetailsUiModel.getImageThumbnailUrl(),
+                movieDetailsUiModel.getReleaseDate(),
+                movieDetailsUiModel.getUserRating(),
+                movieDetailsUiModel.getPlotSynopsis()
         );
 
         List<ReviewModel> reviewModels = new ArrayList<>();
-        for (ReviewUiModel review : movie.getReviews()) {
+        for (ReviewUiModel review : movieDetailsUiModel.getReviews()) {
             reviewModels.add(new ReviewModel(movieId, review.getAuthor(), review.getContent()));
         }
 
         List<TrailerModel> trailerModels = new ArrayList<>();
-        for (TrailerUiModel trailer : movie.getTrailers()) {
+        for (TrailerUiModel trailer : movieDetailsUiModel.getTrailers()) {
             trailerModels.add(new TrailerModel(movieId, trailer.getTrailerId()));
         }
 
@@ -124,9 +133,8 @@ public class MovieDetailsViewModel {
                 .collect(Collectors.toList());
     }
 
-    public Single<Boolean> isFavorite(String movieId){
-        return dataModel.getMovieModelFromFavorites(movieId)
-                .map(movieModel -> movieModel != null);
+    public Single<Boolean> isFavorite(String movieId) {
+        return dataModel.isInFavorites(movieId);
     }
 }
 

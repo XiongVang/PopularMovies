@@ -34,4 +34,6 @@ public interface DataModel {
     Single<List<ReviewModel>> getReviewModelsFromFavorites(@NonNull String movieId);
 
     Single<List<TrailerModel>> getTrailerModelsFromFavorites(@NonNull String movieId);
+
+    Single<Boolean> isInFavorites(String movieId);
 }

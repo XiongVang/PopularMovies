@@ -36,11 +36,10 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
@@ -104,6 +103,7 @@ public class MoviePosterFragment extends Fragment {
         mMoviePosterAdapter = new MoviePosterAdapter(mMovieListUpdateNotifier);
         mMoviePosterGrid.setLayoutManager(new GridLayoutManager(mContext, 2));
         mMoviePosterGrid.setAdapter(mMoviePosterAdapter);
+        subscribeToListItemClickListener();
 
         return view;
     }
@@ -112,14 +112,13 @@ public class MoviePosterFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (!isConnectedToNetwork()) {
+
+        if (!isConnectedToNetwork() && (mSortPref != FAVORITE_MOVIES)) {
             showNetworkError();
             return;
         }
 
         fetchMoviePosters();
-
-        subscribeToListItemClickListener();
 
     }
 
@@ -138,14 +137,9 @@ public class MoviePosterFragment extends Fragment {
     private void subscribeToListItemClickListener() {
 
         mMoviePosterAdapter.getListItemClickNotifier()
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<String>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        mCompositeDisposable.add(d);
-                    }
-
+                .subscribe(new DisposableObserver<String>(){
                     @Override
                     public void onNext(String movieId) {
                         startActivity(MovieDetailsActivity.newIntent(mContext,movieId));

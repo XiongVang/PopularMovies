@@ -126,4 +126,9 @@ public class DataModelImpl implements DataModel {
         return localDataSource.getTrailers(movieId);
     }
 
+    @Override
+    public Single<Boolean> isInFavorites(String movieId) {
+        return localDataSource.isFavorite(movieId);
+    }
+
 }
