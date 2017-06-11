@@ -166,7 +166,17 @@ public class MovieContentProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
 
-        throw new UnsupportedOperationException("Not yet implemented");
+        final SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
+        int rowsCount = 0;
+        int match = sUriMatcher.match(uri);
+        if(match == MOVIES) {
+            rowsCount = db.delete(MovieContract.Movie.TABLE_NAME,
+                    selection,
+                    selectionArgs);
+        }
+
+        db.close();
+        return rowsCount;
     }
 
 

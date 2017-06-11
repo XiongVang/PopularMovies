@@ -350,4 +350,25 @@ public class LocalDataSourceImpl implements LocalDataSource {
             cursor.close();
         });
     }
+
+    @Override
+    public Completable removeFromFavorites(String movieId) {
+        return Completable.create(emitter -> {
+            try {
+                int rowsCount = mContentResolver.delete(
+                        MovieContract.Movie.MOVIES_URI,
+                        MovieContract.Movie.KEY_MOVIE_ID + " = " + movieId,
+                        null);
+
+                if (rowsCount != 0) {
+                    emitter.onComplete();
+                } else {
+                    emitter.onError(new Throwable("ERROR: not able to find movieId"));
+                }
+
+            } catch (Exception e) {
+                emitter.onError(e);
+            }
+        });
+    }
 }

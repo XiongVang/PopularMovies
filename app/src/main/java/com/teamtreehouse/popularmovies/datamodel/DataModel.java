@@ -36,4 +36,6 @@ public interface DataModel {
     Single<List<TrailerModel>> getTrailerModelsFromFavorites(@NonNull String movieId);
 
     Single<Boolean> isInFavorites(String movieId);
+
+    Completable removeFromFavorites(String movieId);
 }

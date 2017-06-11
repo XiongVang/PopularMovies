@@ -10,7 +10,9 @@ import com.teamtreehouse.popularmovies.di.DataModelModule;
 
 public class PopularMoviesApp extends Application {
 
-    private final String API_KEY = "63ba90194ff5cc0e2f703ed4f25413f1";
+
+    // Enter api key here to run app
+    private final String API_KEY = "";
 
     DataComponent mDataComponent;
 

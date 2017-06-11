@@ -1,7 +1,6 @@
 package com.teamtreehouse.popularmovies.view.moviedetails;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -88,14 +87,16 @@ public class MovieDetailsFragment extends Fragment {
     TextView mNoReviewsFound;
     private Unbinder mUnbinder;
 
-    private String mMovieId;
-    private MovieDetailsUiModel mMovieDetailsUiModel;
     private PublishRelay<List<TrailerUiModel>> mTrailersUpdatedNotifier;
     private MovieTrailersAdapter mTrailersAdapter;
     private PublishRelay<List<ReviewUiModel>> mReviewsUpdatedNotifier;
     private MovieReviewsAdapter mReviewsAdapter;
 
     private Context mContext;
+
+    private String mMovieId;
+    private MovieDetailsUiModel mMovieDetailsUiModel;
+    private boolean mIsFavorite;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -238,7 +239,7 @@ public class MovieDetailsFragment extends Fragment {
         mPlotSynopsis.setText(mMovieDetailsUiModel.getPlotSynopsis());
     }
 
-    private void setupFavoritesButton(){
+    private void setupFavoritesButton() {
 
         mMovieDetailsViewModel.isFavorite(mMovieId)
                 .subscribeOn(Schedulers.newThread())
@@ -246,34 +247,8 @@ public class MovieDetailsFragment extends Fragment {
                 .subscribe(new DisposableSingleObserver<Boolean>() {
                     @Override
                     public void onSuccess(Boolean value) {
-
-                        if(value){
-                            mFavoritesButton.setBackgroundColor(Color.RED);
-                            mFavoritesButton.setEnabled(false);
-                        } else {
-
-                            mFavoritesButton.setOnClickListener(v -> {
-
-                                mMovieDetailsViewModel.addToFavorites()
-                                        .subscribeOn(Schedulers.newThread())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new DisposableCompletableObserver() {
-                                            @Override
-                                            public void onComplete() {
-                                                v.setBackgroundColor(Color.RED);
-                                                v.setEnabled(false);
-                                                Toast.makeText(mContext, "Movie has been added to favorites",Toast.LENGTH_SHORT).show();
-                                            }
-
-                                            @Override
-                                            public void onError(Throwable e) {
-                                                Log.e(TAG, "onError: addToFavorites()", e);
-                                                Toast.makeText(mContext, "ERROR: Not able to save to favorites",Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            });
-                        }
-
+                        mIsFavorite = value;
+                        updateFavoritesButton();
                     }
 
                     @Override
@@ -284,6 +259,60 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
+    private void updateFavoritesButton() {
+
+        Log.d(TAG, "updateFavoritesButton: " + mIsFavorite);
+
+        if (!mIsFavorite) {
+
+            mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.notFavorite,null));
+            mFavoritesButton.setOnClickListener(v -> {
+
+                mMovieDetailsViewModel.addToFavorites()
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new DisposableCompletableObserver() {
+                            @Override
+                            public void onComplete() {
+                                mIsFavorite = true;
+                                updateFavoritesButton();
+                                Toast.makeText(mContext, "Movie has been added to favorites", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "onError: addToFavorites()", e);
+                                Toast.makeText(mContext, "ERROR: Not able to save to favorites", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            });
+
+        } else {
+
+            mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.isFavorite,null));
+            mFavoritesButton.setOnClickListener(v -> {
+
+                mMovieDetailsViewModel.removeFromFavorites(mMovieId)
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new DisposableCompletableObserver() {
+                            @Override
+                            public void onComplete() {
+                                mIsFavorite = false;
+                                updateFavoritesButton();
+                                Toast.makeText(mContext, "Movie has been removed to favorites", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "onError: removeFromFavorites()", e);
+                                Toast.makeText(mContext, "ERROR: Not able to remove from favorites", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            });
+
+        }
+    }
 
     private void showErrorMessage() {
         mRetryButton.setOnClickListener(v -> onResume());

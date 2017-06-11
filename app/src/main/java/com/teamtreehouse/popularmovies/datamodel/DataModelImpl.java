@@ -131,4 +131,9 @@ public class DataModelImpl implements DataModel {
         return localDataSource.isFavorite(movieId);
     }
 
+    @Override
+    public Completable removeFromFavorites(String movieId) {
+        return localDataSource.removeFromFavorites(movieId);
+    }
+
 }

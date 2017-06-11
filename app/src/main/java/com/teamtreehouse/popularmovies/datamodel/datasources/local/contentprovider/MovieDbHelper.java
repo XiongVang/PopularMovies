@@ -24,6 +24,12 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
     // Enable foreign key support
     @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        db.setForeignKeyConstraintsEnabled(true);
+    }
+
+    @Override
     public void onConfigure(SQLiteDatabase db) {
         super.onConfigure(db);
         db.setForeignKeyConstraintsEnabled(true);
@@ -57,6 +63,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieContract.Review.COLUMN_CONTENT         + " TEXT NOT NULL, " +
                 "FOREIGN KEY(" + MovieContract.Review.KEY_MOVIE_ID + ") " +
                 "REFERENCES " + MovieContract.Movie.TABLE_NAME + "(" + MovieContract.Movie.KEY_MOVIE_ID + ")" +
+                "ON DELETE CASCADE" +
                 ");";
         Log.d(TAG, "onCreate: " + CREATE_REVIEWS_TABLE);
         db.execSQL(CREATE_REVIEWS_TABLE);
@@ -67,6 +74,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieContract.Trailer.COLUMN_VIDEO_KEY       + " TEXT NOT NULL, " +
                 "FOREIGN KEY(" + MovieContract.Trailer.KEY_MOVIE_ID + ") " +
                 "REFERENCES " + MovieContract.Movie.TABLE_NAME + "(" + MovieContract.Movie.KEY_MOVIE_ID + ")" +
+                "ON DELETE CASCADE" +
                 ");";
         Log.d(TAG, "onCreate: " + CREATE_TRAILERS_TABLE);
         db.execSQL(CREATE_TRAILERS_TABLE);

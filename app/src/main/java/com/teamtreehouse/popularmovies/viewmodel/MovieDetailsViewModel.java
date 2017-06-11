@@ -133,6 +133,10 @@ public class MovieDetailsViewModel {
                 .collect(Collectors.toList());
     }
 
+    public Completable removeFromFavorites(String movieId){
+        return dataModel.removeFromFavorites(movieId);
+    }
+
     public Single<Boolean> isFavorite(String movieId) {
         return dataModel.isInFavorites(movieId);
     }
