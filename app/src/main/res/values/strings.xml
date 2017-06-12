@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">PopularMovies</string>
-    <string name="api_key">63ba90194ff5cc0e2f703ed4f25413f1</string>
+    <string translatable="false" name="app_name">PopularMovies</string>
+    <string translatable="false" name="api_key">63ba90194ff5cc0e2f703ed4f25413f1</string>
     <string name="error_text_placeholder">Error text placeholder</string>
     <string name="network_error">Unable to connect to network</string>
     <string name="retry">Retry</string>

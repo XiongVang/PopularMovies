@@ -91,4 +91,5 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
         return mListItemClickNotifier;
     }
 
+
 }

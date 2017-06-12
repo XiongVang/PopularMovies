@@ -3,9 +3,6 @@ package com.teamtreehouse.popularmovies.datamodel.datasources.local.contentprovi
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-
-import static android.content.ContentValues.TAG;
 
 public class MovieDbHelper extends SQLiteOpenHelper {
 
@@ -52,7 +49,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieContract.Movie.COLUMN_PLOT_SYNOPSIS   + " TEXT NOT NULL " +
                 ");";
 
-        Log.d(TAG, "onCreate: " + CREATE_MOVIES_TABLE);
         db.execSQL(CREATE_MOVIES_TABLE);
 
 
@@ -65,7 +61,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 "REFERENCES " + MovieContract.Movie.TABLE_NAME + "(" + MovieContract.Movie.KEY_MOVIE_ID + ")" +
                 "ON DELETE CASCADE" +
                 ");";
-        Log.d(TAG, "onCreate: " + CREATE_REVIEWS_TABLE);
         db.execSQL(CREATE_REVIEWS_TABLE);
 
         final String CREATE_TRAILERS_TABLE = "CREATE TABLE "  + MovieContract.Trailer.TABLE_NAME +
@@ -76,7 +71,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 "REFERENCES " + MovieContract.Movie.TABLE_NAME + "(" + MovieContract.Movie.KEY_MOVIE_ID + ")" +
                 "ON DELETE CASCADE" +
                 ");";
-        Log.d(TAG, "onCreate: " + CREATE_TRAILERS_TABLE);
         db.execSQL(CREATE_TRAILERS_TABLE);
     }
 

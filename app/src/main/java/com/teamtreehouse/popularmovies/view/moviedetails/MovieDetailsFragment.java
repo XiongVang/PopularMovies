@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,9 +54,13 @@ public class MovieDetailsFragment extends Fragment {
         return fragment;
     }
 
+    private static final String SCROLL_VIEW_POSITION = "scroll_view_position";
+
     @Inject
     MovieDetailsViewModel mMovieDetailsViewModel;
 
+    @BindView(R.id.movie_details_container)
+    ScrollView mScrollViewContainer;
     @BindView(R.id.error_message)
     LinearLayout mErrorMessage;
     @BindView(R.id.retry_button)
@@ -261,8 +266,6 @@ public class MovieDetailsFragment extends Fragment {
 
     private void updateFavoritesButton() {
 
-        Log.d(TAG, "updateFavoritesButton: " + mIsFavorite);
-
         if (!mIsFavorite) {
 
             mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.notFavorite,null));
@@ -338,6 +341,5 @@ public class MovieDetailsFragment extends Fragment {
     public void onDestroyView() {
         mUnbinder.unbind();
         super.onDestroyView();
-        Log.d(TAG, "onDestroyView: ");
     }
 }

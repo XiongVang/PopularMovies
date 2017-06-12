@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 public class MovieContentProvider extends ContentProvider {
 
@@ -106,13 +105,10 @@ public class MovieContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        Log.d(TAG, "query: " + uri);
 
         final SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
 
         int match = sUriMatcher.match(uri);
-
-        Log.d(TAG, "query: " + match);
 
         Cursor retCursor;
 

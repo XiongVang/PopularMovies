@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -47,6 +48,10 @@ public class MoviePosterFragment extends Fragment {
 
     private static final String TAG = "MoviePosterFragment";
 
+    private static final String SORT_PREF_STATE = "sort_preference_state";
+    private static final String LAYOUT_MANAGER_STATE = "layout_manager_state";
+
+
     private static final int SORT_BY_MOST_POPULAR = 1;
     private static final int SORT_BY_HIGHEST_RATED = 2;
     private static final int FAVORITE_MOVIES = 3;
@@ -73,9 +78,11 @@ public class MoviePosterFragment extends Fragment {
 
     private Context mContext;
     private PublishRelay<List<MoviePosterUiModel>> mMovieListUpdateNotifier;
-    MoviePosterAdapter mMoviePosterAdapter;
+    private MoviePosterAdapter mMoviePosterAdapter;
+    private GridLayoutManager mGridLayoutManager;
 
-    private int mSortPref;
+    private int mSortPref = SORT_BY_MOST_POPULAR;
+    private Parcelable mLayoutManagerState;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,17 +108,30 @@ public class MoviePosterFragment extends Fragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
         mMoviePosterAdapter = new MoviePosterAdapter(mMovieListUpdateNotifier);
-        mMoviePosterGrid.setLayoutManager(new GridLayoutManager(mContext, 2));
+        mGridLayoutManager = new GridLayoutManager(mContext, 2);
         mMoviePosterGrid.setAdapter(mMoviePosterAdapter);
+        mMoviePosterGrid.setLayoutManager(mGridLayoutManager);
+
         subscribeToListItemClickListener();
 
         return view;
     }
 
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onViewStateRestored: ");
+        if (savedInstanceState != null) {
+            mSortPref = savedInstanceState.getInt(SORT_PREF_STATE);
+            mLayoutManagerState = savedInstanceState.getParcelable(LAYOUT_MANAGER_STATE);
+        }
+
+        super.onViewStateRestored(savedInstanceState);
+    }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onResume: ");
 
         if (!isConnectedToNetwork() && (mSortPref != FAVORITE_MOVIES)) {
             showNetworkError();
@@ -120,7 +140,11 @@ public class MoviePosterFragment extends Fragment {
 
         fetchMoviePosters();
 
+        if(mLayoutManagerState!=null) {
+            mGridLayoutManager.onRestoreInstanceState(mLayoutManagerState);
+        }
     }
+
 
     // Checks for network connection
     private boolean isConnectedToNetwork() {
@@ -139,10 +163,10 @@ public class MoviePosterFragment extends Fragment {
         mMoviePosterAdapter.getListItemClickNotifier()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new DisposableObserver<String>(){
+                .subscribe(new DisposableObserver<String>() {
                     @Override
                     public void onNext(String movieId) {
-                        startActivity(MovieDetailsActivity.newIntent(mContext,movieId));
+                        startActivity(MovieDetailsActivity.newIntent(mContext, movieId));
                     }
 
                     @Override
@@ -162,7 +186,7 @@ public class MoviePosterFragment extends Fragment {
 
         Single<List<MoviePosterUiModel>> moviesData;
 
-        switch (mSortPref){
+        switch (mSortPref) {
             case SORT_BY_HIGHEST_RATED:
                 moviesData = mMoviePosterViewModel.getHighestRateMovies();
                 break;
@@ -191,11 +215,17 @@ public class MoviePosterFragment extends Fragment {
                 });
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        mCompositeDisposable.clear();
+    }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        mCompositeDisposable.clear();
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SORT_PREF_STATE, mSortPref);
+        outState.putParcelable(LAYOUT_MANAGER_STATE,mGridLayoutManager.onSaveInstanceState());
     }
 
     @Override
@@ -227,7 +257,6 @@ public class MoviePosterFragment extends Fragment {
     }
 
 
-
     // --- Options Menu ---
 
     @Override
@@ -235,15 +264,15 @@ public class MoviePosterFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.sort_options, menu);
 
-        if(mSortPref == SORT_BY_HIGHEST_RATED){
+        if (mSortPref == SORT_BY_HIGHEST_RATED) {
             menu.findItem(R.id.sort_by_highest_rated).setEnabled(false);
             menu.findItem(R.id.sort_by_most_popular).setEnabled(true);
             menu.findItem(R.id.favorite_movies).setEnabled(true);
-        } else if (mSortPref == FAVORITE_MOVIES){
+        } else if (mSortPref == FAVORITE_MOVIES) {
             menu.findItem(R.id.sort_by_highest_rated).setEnabled(true);
             menu.findItem(R.id.sort_by_most_popular).setEnabled(true);
             menu.findItem(R.id.favorite_movies).setEnabled(false);
-        }else {
+        } else {
             menu.findItem(R.id.sort_by_highest_rated).setEnabled(true);
             menu.findItem(R.id.sort_by_most_popular).setEnabled(false);
             menu.findItem(R.id.favorite_movies).setEnabled(true);

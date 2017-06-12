@@ -57,7 +57,6 @@ public class MovieDetailsViewModel {
                 dataModel.getReviewModels(movieId),
                 dataModel.getTrailerModels(movieId),
                 (movieModel, reviewModels, trailerModels) -> {
-                    Log.d(TAG, "fetchMovieDetailsFromApi: mapper");
                     MovieDetailsUiModel movie = toMovieDetailsUiModel(movieModel);
                     movie.setReviews(toReviewUiModels(reviewModels));
                     movie.setTrailers(toTrailerUiModels(trailerModels));
@@ -76,7 +75,6 @@ public class MovieDetailsViewModel {
 
                 (movieModel, reviewModels, trailerModels) -> {
 
-                    Log.d(TAG, "fetchMovieDetailsFromFavorites: mapper");
                     MovieDetailsUiModel movie = toMovieDetailsUiModel(movieModel);
                     movie.setReviews(toReviewUiModels(reviewModels));
                     movie.setTrailers(toTrailerUiModels(trailerModels));

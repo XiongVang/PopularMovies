@@ -18,7 +18,10 @@ package com.teamtreehouse.popularmovies.datamodel.datasources.local.contentprovi
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class MovieContract {
+public final class MovieContract {
+
+    // Immutable
+    private MovieContract(){}
 
 
     // The authority, which is how your code knows which Content Provider to access
