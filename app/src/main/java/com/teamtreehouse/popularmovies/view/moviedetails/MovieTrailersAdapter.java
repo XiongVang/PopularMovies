@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.jakewharton.rxrelay2.PublishRelay;
 import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.R;
 import com.teamtreehouse.popularmovies.viewmodel.uimodels.TrailerUiModel;
@@ -20,8 +19,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.Completable;
 
 
 public class MovieTrailersAdapter extends RecyclerView.Adapter<MovieTrailersAdapter.ThumbnailViewHolder> {
@@ -32,19 +30,16 @@ public class MovieTrailersAdapter extends RecyclerView.Adapter<MovieTrailersAdap
 
     List<TrailerUiModel> mTrailers;
 
-    public MovieTrailersAdapter(PublishRelay<List<TrailerUiModel>> onTrailersUpdatedNotifier){
+    public MovieTrailersAdapter(){
         mTrailers = new ArrayList<>();
-
-        onTrailersUpdatedNotifier
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((trailers) -> updateUI(trailers));
-
     }
 
-    private void updateUI(List<TrailerUiModel> trailers){
-        mTrailers = trailers;
-        notifyDataSetChanged();
+    public Completable updateUI(List<TrailerUiModel> trailers){
+        return Completable.create(emitter -> {
+            mTrailers = trailers;
+            notifyDataSetChanged();
+            emitter.onComplete();
+        });
     }
 
     @Override

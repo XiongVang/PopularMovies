@@ -19,7 +19,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jakewharton.rxrelay2.PublishRelay;
 import com.squareup.picasso.Picasso;
 import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
@@ -92,9 +91,8 @@ public class MovieDetailsFragment extends Fragment {
     TextView mNoReviewsFound;
     private Unbinder mUnbinder;
 
-    private PublishRelay<List<TrailerUiModel>> mTrailersUpdatedNotifier;
+
     private MovieTrailersAdapter mTrailersAdapter;
-    private PublishRelay<List<ReviewUiModel>> mReviewsUpdatedNotifier;
     private MovieReviewsAdapter mReviewsAdapter;
 
     private Context mContext;
@@ -102,11 +100,13 @@ public class MovieDetailsFragment extends Fragment {
     private String mMovieId;
     private MovieDetailsUiModel mMovieDetailsUiModel;
     private boolean mIsFavorite;
+    private int[] mScrollViewPosition;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mMovieId = getArguments().getString(ARG_MOVIE_ID);
+        mScrollViewPosition = new int[]{0, 0};
     }
 
     @Nullable
@@ -131,21 +131,27 @@ public class MovieDetailsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            mScrollViewPosition = savedInstanceState.getIntArray(SCROLL_VIEW_POSITION);
+        }
+
+        Log.d(TAG, "onViewStateRestored: mScrollViewPosition " + mScrollViewPosition[0]);
+    }
+
     private void setupTrailersRecyclerView() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
 
-        mTrailersUpdatedNotifier = PublishRelay.create();
-        mTrailersAdapter = new MovieTrailersAdapter(mTrailersUpdatedNotifier);
-
+        mTrailersAdapter = new MovieTrailersAdapter();
         mTrailersView.setLayoutManager(layoutManager);
         mTrailersView.setAdapter(mTrailersAdapter);
     }
 
     private void setupReviewsRecyclerView() {
-        mReviewsUpdatedNotifier = PublishRelay.create();
-        mReviewsAdapter = new MovieReviewsAdapter(mReviewsUpdatedNotifier);
-
+        mReviewsAdapter = new MovieReviewsAdapter();
         mReviewsView.setLayoutManager(new LinearLayoutManager(mContext));
         mReviewsView.setAdapter(mReviewsAdapter);
     }
@@ -192,11 +198,21 @@ public class MovieDetailsFragment extends Fragment {
             showNoTrailersFound();
             return;
         }
+        mTrailersAdapter.updateUI(trailers)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DisposableCompletableObserver() {
+                    @Override
+                    public void onComplete() {
+                        mScrollViewContainer.scrollTo(mScrollViewPosition[0], mScrollViewPosition[1]);
+                    }
 
-        mTrailersUpdatedNotifier.accept(trailers);
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: ", e);
+                    }
+                });
         showTrailers();
-
-
     }
 
     private void showNoTrailersFound() {
@@ -215,7 +231,21 @@ public class MovieDetailsFragment extends Fragment {
             return;
         }
 
-        mReviewsUpdatedNotifier.accept(reviews);
+        mReviewsAdapter.updateUI(reviews)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DisposableCompletableObserver() {
+                    @Override
+                    public void onComplete() {
+                        mScrollViewContainer.scrollTo(mScrollViewPosition[0],mScrollViewPosition[1]);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: ", e);
+                    }
+                });
+
         showReviews();
 
 
@@ -268,7 +298,7 @@ public class MovieDetailsFragment extends Fragment {
 
         if (!mIsFavorite) {
 
-            mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.notFavorite,null));
+            mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.notFavorite, null));
             mFavoritesButton.setOnClickListener(v -> {
 
                 mMovieDetailsViewModel.addToFavorites()
@@ -292,7 +322,7 @@ public class MovieDetailsFragment extends Fragment {
 
         } else {
 
-            mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.isFavorite,null));
+            mFavoritesButton.setBackgroundColor(getResources().getColor(R.color.isFavorite, null));
             mFavoritesButton.setOnClickListener(v -> {
 
                 mMovieDetailsViewModel.removeFromFavorites(mMovieId)
@@ -335,6 +365,22 @@ public class MovieDetailsFragment extends Fragment {
         mMovieDetails.setVisibility(View.VISIBLE);
         mProgressBar.setVisibility(View.GONE);
         mErrorMessage.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mScrollViewPosition[0] = mScrollViewContainer.getScrollX();
+        mScrollViewPosition[1] = mScrollViewContainer.getScrollY();
+
+        Log.d(TAG, "onPause: mScrollViewPosition " + mScrollViewPosition[1]);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState : mScrollViewPosition " + mScrollViewPosition[1]);
+        outState.putIntArray(SCROLL_VIEW_POSITION, mScrollViewPosition);
     }
 
     @Override

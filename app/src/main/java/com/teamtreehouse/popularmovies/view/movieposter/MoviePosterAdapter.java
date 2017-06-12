@@ -18,42 +18,27 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.Completable;
 
 public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.MoviePosterHolder> {
 
     private static final String TAG = "MoviePosterAdapter";
 
-    private final PublishRelay<List<MoviePosterUiModel>> mMovieListUpdateNotifier;
 
     private Context mContext;
     private List<MoviePosterUiModel> mMoviePosterUiModels = new ArrayList<>();
     private PublishRelay<String> mListItemClickNotifier;
 
-    public MoviePosterAdapter(PublishRelay movieListNotifier){
-
-        mMovieListUpdateNotifier = movieListNotifier;
-        bind();
+    public MoviePosterAdapter(){
 
         mListItemClickNotifier = PublishRelay.create();
-    }
-
-    private void bind(){
-       mMovieListUpdateNotifier
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(moviePosterUiModels -> {
-                     mMoviePosterUiModels = moviePosterUiModels;
-                    notifyDataSetChanged();
-                });
     }
 
 
     @Override
     public MoviePosterAdapter.MoviePosterHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         mContext = parent.getContext();
-        View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_movie_poster,parent,false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_movie_poster, parent, false);
         return new MoviePosterHolder(view);
     }
 
@@ -80,16 +65,23 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
 
         public MoviePosterHolder(View itemView) {
             super(itemView);
-            mUnbinder = ButterKnife.bind(this,itemView);
+            mUnbinder = ButterKnife.bind(this, itemView);
             mMoviePoster.setOnClickListener(v -> mListItemClickNotifier
                     .accept(mMoviePosterUiModels.get(getAdapterPosition()).getMovieId()));
         }
     }
 
     // Client Methods
-    public PublishRelay<String> getListItemClickNotifier(){
+    public PublishRelay<String> getListItemClickNotifier() {
         return mListItemClickNotifier;
     }
 
+    public Completable updatePosters(List<MoviePosterUiModel> posters){
+        return Completable.complete().create(emitter -> {
+            mMoviePosterUiModels = posters;
+            notifyDataSetChanged();
+            emitter.onComplete();
+        });
 
+    }
 }

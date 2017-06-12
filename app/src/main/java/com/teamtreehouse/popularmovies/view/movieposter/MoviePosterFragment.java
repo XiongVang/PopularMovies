@@ -22,11 +22,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.jakewharton.rxrelay2.PublishRelay;
 import com.teamtreehouse.popularmovies.PopularMoviesApp;
 import com.teamtreehouse.popularmovies.R;
 import com.teamtreehouse.popularmovies.view.moviedetails.MovieDetailsActivity;
-import com.teamtreehouse.popularmovies.viewmodel.MovieDetailsViewModel;
 import com.teamtreehouse.popularmovies.viewmodel.MoviePosterViewModel;
 import com.teamtreehouse.popularmovies.viewmodel.uimodels.MoviePosterUiModel;
 
@@ -40,6 +38,7 @@ import butterknife.Unbinder;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableCompletableObserver;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
@@ -58,8 +57,6 @@ public class MoviePosterFragment extends Fragment {
 
     @Inject
     MoviePosterViewModel mMoviePosterViewModel;
-    @Inject
-    MovieDetailsViewModel mMovieDetailsViewModel;
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -77,7 +74,6 @@ public class MoviePosterFragment extends Fragment {
 
 
     private Context mContext;
-    private PublishRelay<List<MoviePosterUiModel>> mMovieListUpdateNotifier;
     private MoviePosterAdapter mMoviePosterAdapter;
     private GridLayoutManager mGridLayoutManager;
 
@@ -87,7 +83,6 @@ public class MoviePosterFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mMovieListUpdateNotifier = PublishRelay.create();
         mSortPref = SORT_BY_MOST_POPULAR;
         setHasOptionsMenu(true);
     }
@@ -107,7 +102,7 @@ public class MoviePosterFragment extends Fragment {
 
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
-        mMoviePosterAdapter = new MoviePosterAdapter(mMovieListUpdateNotifier);
+        mMoviePosterAdapter = new MoviePosterAdapter();
         mGridLayoutManager = new GridLayoutManager(mContext, 2);
         mMoviePosterGrid.setAdapter(mMoviePosterAdapter);
         mMoviePosterGrid.setLayoutManager(mGridLayoutManager);
@@ -129,8 +124,8 @@ public class MoviePosterFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
         Log.d(TAG, "onResume: ");
 
         if (!isConnectedToNetwork() && (mSortPref != FAVORITE_MOVIES)) {
@@ -139,10 +134,6 @@ public class MoviePosterFragment extends Fragment {
         }
 
         fetchMoviePosters();
-
-        if(mLayoutManagerState!=null) {
-            mGridLayoutManager.onRestoreInstanceState(mLayoutManagerState);
-        }
     }
 
 
@@ -182,6 +173,7 @@ public class MoviePosterFragment extends Fragment {
     }
 
     private void fetchMoviePosters() {
+        Log.d(TAG, "fetchMoviePosters: ");
         showProgressBar();
 
         Single<List<MoviePosterUiModel>> moviesData;
@@ -203,7 +195,26 @@ public class MoviePosterFragment extends Fragment {
                 .subscribe(new DisposableSingleObserver<List<MoviePosterUiModel>>() {
                     @Override
                     public void onSuccess(List<MoviePosterUiModel> movies) {
-                        mMovieListUpdateNotifier.accept(movies);
+
+                        mMoviePosterAdapter.updatePosters(movies)
+                                .subscribeOn(AndroidSchedulers.mainThread())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new DisposableCompletableObserver() {
+                                    @Override
+                                    public void onComplete() {
+                                        if (mLayoutManagerState == null) {
+                                            mMoviePosterGrid.smoothScrollToPosition(0);
+                                        } else {
+                                            mGridLayoutManager.onRestoreInstanceState(mLayoutManagerState);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+                                        Log.e(TAG, "onError: ", e);
+                                    }
+                                });
+
                         showMoviePosterGrid();
                     }
 
@@ -216,16 +227,17 @@ public class MoviePosterFragment extends Fragment {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onPause() {
+        super.onPause();
         mCompositeDisposable.clear();
+        mLayoutManagerState = mGridLayoutManager.onSaveInstanceState();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SORT_PREF_STATE, mSortPref);
-        outState.putParcelable(LAYOUT_MANAGER_STATE,mGridLayoutManager.onSaveInstanceState());
+        outState.putParcelable(LAYOUT_MANAGER_STATE, mLayoutManagerState);
     }
 
     @Override
@@ -262,6 +274,7 @@ public class MoviePosterFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        Log.d(TAG, "onCreateOptionsMenu: ");
         inflater.inflate(R.menu.sort_options, menu);
 
         if (mSortPref == SORT_BY_HIGHEST_RATED) {
@@ -294,7 +307,7 @@ public class MoviePosterFragment extends Fragment {
                 break;
         }
 
-        mMoviePosterGrid.scrollToPosition(0);
+        mLayoutManagerState = null;
         fetchMoviePosters();
         getActivity().invalidateOptionsMenu();
 

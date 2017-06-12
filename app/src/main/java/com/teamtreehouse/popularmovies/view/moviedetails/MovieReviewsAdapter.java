@@ -2,13 +2,11 @@ package com.teamtreehouse.popularmovies.view.moviedetails;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.jakewharton.rxrelay2.PublishRelay;
 import com.teamtreehouse.popularmovies.R;
 import com.teamtreehouse.popularmovies.viewmodel.uimodels.ReviewUiModel;
 
@@ -17,8 +15,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.Completable;
 
 
 public class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapter.ReviewHolder>{
@@ -29,20 +26,16 @@ public class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapte
 
     List<ReviewUiModel> mReviews;
 
-    public MovieReviewsAdapter(PublishRelay<List<ReviewUiModel>> onReviewsUpdatedNotifier) {
+    public MovieReviewsAdapter() {
         mReviews = new ArrayList<>();
-
-        onReviewsUpdatedNotifier
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((reviews) -> updateUI(reviews));
-
     }
 
-    private void updateUI(List<ReviewUiModel> reviews) {
-        mReviews = reviews;
-        Log.d(TAG, "updateUI: " + reviews.size());
-        notifyDataSetChanged();
+    public Completable updateUI(List<ReviewUiModel> reviews) {
+        return Completable.create(emitter -> {
+            mReviews = reviews;
+            notifyDataSetChanged();
+            emitter.onComplete();
+        });
     }
 
     @Override
