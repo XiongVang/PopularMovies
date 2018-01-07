@@ -12,7 +12,7 @@ public class PopularMoviesApp extends Application {
 
 
     // Enter api key here to run app
-    private final String API_KEY = "";
+    private final String API_KEY = "63ba90194ff5cc0e2f703ed4f25413f1";
 
     DataComponent mDataComponent;
 

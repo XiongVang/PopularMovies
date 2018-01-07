@@ -47,17 +47,20 @@ public class MoviePosterFragment extends Fragment {
 
     private static final String TAG = "MoviePosterFragment";
 
+    // State keys
     private static final String SORT_PREF_STATE = "sort_preference_state";
     private static final String LAYOUT_MANAGER_STATE = "layout_manager_state";
 
-
+    // Menu options
     private static final int SORT_BY_MOST_POPULAR = 1;
     private static final int SORT_BY_HIGHEST_RATED = 2;
     private static final int FAVORITE_MOVIES = 3;
 
+    // Dagger
     @Inject
     MoviePosterViewModel mMoviePosterViewModel;
 
+    // Butterknife
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
     @BindView(R.id.error_message)
@@ -70,14 +73,19 @@ public class MoviePosterFragment extends Fragment {
     RecyclerView mMoviePosterGrid;
     private Unbinder mUnbinder;
 
+    // RxJava
     private CompositeDisposable mCompositeDisposable;
 
-
     private Context mContext;
+
+    // RecyclerView
     private MoviePosterAdapter mMoviePosterAdapter;
     private GridLayoutManager mGridLayoutManager;
 
+    // prefs
     private int mSortPref = SORT_BY_MOST_POPULAR;
+
+    // state
     private Parcelable mLayoutManagerState;
 
     @Override
@@ -93,15 +101,22 @@ public class MoviePosterFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_movie_poster, container, false);
 
         mContext = container.getContext();
+
+        // Dagger injection
         ((PopularMoviesApp) mContext.getApplicationContext())
                 .getDataComponent()
                 .inject(this);
 
+        // Butterknife view binding
         mUnbinder = ButterKnife.bind(this, view);
+
+        // RxJava dispoables
         mCompositeDisposable = new CompositeDisposable();
 
+        // support action bar
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
+        // RecyclerView
         mMoviePosterAdapter = new MoviePosterAdapter();
         mGridLayoutManager = new GridLayoutManager(mContext, 2);
         mMoviePosterGrid.setAdapter(mMoviePosterAdapter);
